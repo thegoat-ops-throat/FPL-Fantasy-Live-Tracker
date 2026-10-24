@@ -110,4 +110,4 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__=='__main__':
     threading.Thread(target=loop,daemon=True).start()
     print('Open http://localhost:8000 (Ctrl+C to stop)')
-    ThreadingHTTPServer(('127.0.0.1',8000),Handler).serve_forever()
+   ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', 8000))), Handler).serve_forever()
