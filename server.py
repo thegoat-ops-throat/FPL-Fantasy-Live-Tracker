@@ -107,7 +107,8 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200);self.send_header('Content-Type','application/json; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
         else:super().do_GET()
 
-if __name__=='__main__':
-    threading.Thread(target=loop,daemon=True).start()
-    print('Open http://localhost:8000 (Ctrl+C to stop)')
-   ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', 8000))), Handler).serve_forever()
+
+if __name__ == '__main__':
+    threading.Thread(target=loop, daemon=True).start()
+    print('Touchline server is running', flush=True)
+    ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', 8000))), Handler).serve_forever()
