@@ -4,6 +4,7 @@ Run: python server.py. On Render: Start Command = python server.py.
 No FPL account password or API key is needed for public Draft endpoints.
 """
 import json
+from urllib.parse import urlsplit
 import os
 import threading
 import time
@@ -17,6 +18,7 @@ from projection_model import prediction
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'scores.json'
 CONFIG = ROOT / 'config.json'
+EXTERNAL_INPUTS = ROOT / 'external_projection_inputs.json'
 BASE = 'https://draft.premierleague.com/api'
 MANAGERS = [
     {'name': 'Saul', 'team': 'Saulitos', 'id': 393832},
@@ -43,7 +45,8 @@ def default_state():
         'managers': MANAGERS, 'scores': {}, 'players': {},
         'score_sources': {}, 'week_status': {}, 'rounds': {}, 'history': [],
         'provisional': True, 'waivers': {'source': 'unavailable', 'order': []},
-        'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-XI-statistical-v1',
+        'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-XI-statistical-v3',
+        'projection_sources': ['FPL Draft'],
     }
 
 
@@ -134,6 +137,9 @@ def player_index(bootstrap):
             'availability': str(p.get('status') or 'a'),
             'injury_news': str(p.get('news') or ''),
             'chance_next': p.get('chance_of_playing_next_round'),
+            'auto_form': p.get('form'), 'auto_xg': p.get('expected_goals'),
+            'auto_xa': p.get('expected_assists'),
+            'auto_minutes': p.get('minutes'), 'auto_points_per_game': p.get('points_per_game'),
         }
     return result
 
@@ -281,6 +287,10 @@ def week_data(gw, bootstrap, events, players_db, clubs_db):
                 'injury_status': details.get('availability','a') if gw == event_info(bootstrap)[0] else 'historical',
                 'injury_news': details.get('injury_news','') if gw == event_info(bootstrap)[0] else '',
                 'chance_next': details.get('chance_next') if gw == event_info(bootstrap)[0] else None,
+                'auto_form': details.get('auto_form'), 'auto_xg': details.get('auto_xg'),
+                'auto_xa': details.get('auto_xa'),
+                'auto_minutes': details.get('auto_minutes'),
+                'auto_points_per_game': details.get('auto_points_per_game'),
                 'yellow_cards': safe_int(live_stats.get('yellow_cards')),
                 'red_cards': safe_int(live_stats.get('red_cards')),
                 'goals': safe_int(live_stats.get('goals_scored')),
@@ -427,6 +437,52 @@ def waiver_data(config, state=None):
 
 
 
+
+
+def external_projection_inputs():
+    """Merge optional manual inputs with a permissioned HTTPS JSON feed.
+
+    Feed schema: {"players":[{"player_id":123,...}]}.
+    Never query FotMob/Transfermarkt pages directly. Feed URL is operator-supplied
+    and should point to a provider/API you are authorized to use.
+    """
+    result = {}
+    if EXTERNAL_INPUTS.exists():
+        try:
+            raw = json.loads(EXTERNAL_INPUTS.read_text(encoding='utf-8'))
+            items = raw.get('players', []) if isinstance(raw, dict) else raw
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, dict) and safe_int(item.get('player_id')) > 0:
+                        result[safe_int(item['player_id'])] = dict(item)
+        except (OSError, ValueError, TypeError):
+            pass
+    # Optional feed: only read once per process refresh call. Fail closed to manual.
+    url = os.environ.get('TOUCHLINE_EXTERNAL_FEED_URL','').strip()
+    if url:
+        parts = urlsplit(url)
+        if parts.scheme == 'https' and parts.hostname and not parts.username and not parts.password:
+            try:
+                req = urllib.request.Request(url, headers={
+                    'User-Agent':'Touchline/2.7 (league projections)', 'Accept':'application/json'})
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    if 'json' not in resp.headers.get('Content-Type',''):
+                        raise ValueError('Feed did not serve JSON')
+                    data = resp.read(512_001)
+                    if len(data)>512_000:
+                        raise ValueError('Feed too large')
+                payload = json.loads(data)
+                entries = payload.get('players', []) if isinstance(payload,dict) else []
+                if isinstance(entries,list):
+                    for item in entries[:1000]:
+                        if isinstance(item,dict) and safe_int(item.get('player_id'))>0:
+                            pid=safe_int(item['player_id'])
+                            result[pid]={**result.get(pid,{}),**item}
+            except (ValueError,TypeError,urllib.error.URLError,OSError):
+                pass
+    return {'players':list(result.values())}
+
+
 def verified_briefings():
     """Optional commissioner-curated briefings; never scraped or AI-invented."""
     path = ROOT / 'press_conferences.json'
@@ -454,6 +510,7 @@ def verified_briefings():
 def refresh_one(gw, bootstrap, events, player_db, clubs):
     scores, players, sources, info = week_data(gw, bootstrap, events, player_db, clubs)
     briefings = verified_briefings()
+    external_inputs = external_projection_inputs()
     for manager,team in players.items():
         for player in team['roster']:
             if player['id'] in briefings and gw == event_info(bootstrap)[0]:
@@ -466,7 +523,7 @@ def refresh_one(gw, bootstrap, events, player_db, clubs):
         state['week_status'][str(gw)] = info
         state['club_results'][str(gw)] = info.get('fixture_results', [])
         for manager, team in players.items():
-            team['projections'] = prediction(state, gw, team['roster'])
+            team['projections'] = prediction(state, gw, team['roster'], external_inputs)
         update_summaries(state)
         state['waivers'] = waiver_data(load_config(), state)
         save(state)
@@ -485,6 +542,7 @@ def worker():
                 state['managers'] = MANAGERS
                 update_summaries(state)
                 state['waivers'] = waiver_data(load_config(), state)
+                state['projection_sources'] = ['FPL Draft', 'Optional external inputs']
                 save(state)
             # Current first: all six managers appear quickly after a Render cold start.
             refresh_one(current, bootstrap, events, player_db, clubs)
@@ -515,7 +573,7 @@ def worker():
                     state['history_errors'] = errors
                     update_summaries(state)
                     for manager, team in state.get('players',{}).get(str(current),{}).items():
-                        team['projections'] = prediction(state, current, team.get('roster',[]))
+                        team['projections'] = prediction(state, current, team.get('roster',[]), external_projection_inputs())
                     save(state)
                 last_history = time.time()
         except Exception as exc:
