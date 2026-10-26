@@ -27,6 +27,7 @@ MANAGERS = [
 ]
 # Only used if the old GW7 public API is inaccessible; clearly identified as a snapshot.
 GW7_SCREENSHOT = {'Saul': 61, 'Albert': 54, 'Eddy': 43, 'Daviel': 34, 'Jaden': 46, 'Andrew': 37}
+SCORING_VERSION = 2
 REFRESH_SECONDS = 300
 HISTORY_REFRESH_SECONDS = 6 * 3600
 FETCH_TIMEOUT = 16
@@ -35,6 +36,7 @@ state_lock = threading.RLock()
 
 def default_state():
     return {
+        'scoring_version': SCORING_VERSION,
         'updated_at': None, 'status': 'Connecting to Fantasy Premier League Draft…',
         'source': 'Fantasy Premier League Draft', 'gameweek': 8,
         'managers': MANAGERS, 'scores': {}, 'players': {},
@@ -49,6 +51,10 @@ def load():
         try:
             result = json.loads(STATE.read_text(encoding='utf-8'))
             if isinstance(result, dict):
+                # Previous builds could double-apply official auto-subs. Clear
+                # all derived scores rather than continue showing bad history.
+                if result.get('scoring_version') != SCORING_VERSION:
+                    return default_state()
                 merged = default_state()
                 merged.update(result)
                 return merged
@@ -271,19 +277,45 @@ def week_data(gw, bootstrap, events, players_db, clubs_db):
             })
         substitutions = extract_confirmed_subs(payload)
         xi_total = sum(p['points'] for p in roster if p['position'] <= 11)
+        indexed = {p['id']: p for p in roster}
+        # Draft can return the *post-auto-sub* starting XI along with a 'subs'
+        # record. Never add the sub points a second time when the incoming player
+        # is already a starter and the outgoing player is already on the bench.
+        total = xi_total
+        source = 'starting_xi'
         if substitutions:
-            indexed = {p['id']: p for p in roster}
-            total = xi_total + sum(
-                indexed[s['in_id']]['points'] - indexed[s['out_id']]['points']
-                for s in substitutions if s['in_id'] in indexed and s['out_id'] in indexed
-            )
-            source = 'confirmed_substitutions'
-        else:
-            total = xi_total
-            source = 'starting_xi'
+            adjustments = 0
+            all_resolved = True
+            seen = set()
+            for sub in substitutions:
+                incoming = indexed.get(sub['in_id'])
+                outgoing = indexed.get(sub['out_id'])
+                if not incoming or not outgoing:
+                    all_resolved = False
+                    continue
+                if incoming['position'] <= 11 and outgoing['position'] > 11:
+                    # The API has already put the substitute in the XI.
+                    sub['applied_to_xi'] = True
+                elif incoming['position'] > 11 and outgoing['position'] <= 11:
+                    # The API still displays the original XI: apply it once.
+                    key = (sub['in_id'], sub['out_id'])
+                    if key not in seen:
+                        adjustments += incoming['points'] - outgoing['points']
+                        seen.add(key)
+                    sub['applied_to_xi'] = False
+                else:
+                    # Ambiguous source positions: don't fabricate a corrected score.
+                    all_resolved = False
+                    sub['applied_to_xi'] = None
+            if all_resolved:
+                total += adjustments
+                source = 'confirmed_substitutions'
+            else:
+                source = 'starting_xi_unverified_subs'
         history = payload.get('entry_history') or {}
         official_points = history.get('points') if isinstance(history, dict) else None
         if isinstance(official_points, int) and not isinstance(official_points, bool):
+            # An explicit Draft-reported GW score is authoritative.
             total = official_points
             source = 'official_entry_history'
         if not substitutions and source != 'official_entry_history':
