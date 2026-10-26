@@ -12,6 +12,7 @@ import urllib.request
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from projection_model import prediction
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'scores.json'
@@ -27,7 +28,7 @@ MANAGERS = [
 ]
 # Only used if the old GW7 public API is inaccessible; clearly identified as a snapshot.
 GW7_SCREENSHOT = {'Saul': 61, 'Albert': 54, 'Eddy': 43, 'Daviel': 34, 'Jaden': 46, 'Andrew': 37}
-SCORING_VERSION = 3
+SCORING_VERSION = 4
 REFRESH_SECONDS = 300
 HISTORY_REFRESH_SECONDS = 6 * 3600
 FETCH_TIMEOUT = 16
@@ -42,7 +43,7 @@ def default_state():
         'managers': MANAGERS, 'scores': {}, 'players': {},
         'score_sources': {}, 'week_status': {}, 'rounds': {}, 'history': [],
         'provisional': True, 'waivers': {'source': 'unavailable', 'order': []},
-        'history_updated_at': None, 'history_errors': [],
+        'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-XI-statistical-v1',
     }
 
 
@@ -130,6 +131,9 @@ def player_index(bootstrap):
             'club_id': safe_int(p.get('team')),
             'position_type': safe_int(p.get('element_type')),
             'shirt_number': safe_int(p.get('shirt_number')),
+            'availability': str(p.get('status') or 'a'),
+            'injury_news': str(p.get('news') or ''),
+            'chance_next': p.get('chance_of_playing_next_round'),
         }
     return result
 
@@ -159,6 +163,7 @@ def fixtures_index(live, gw):
             'started': bool(f.get('started')),
             'finished': bool(f.get('finished') or f.get('finished_provisional')),
             'kickoff': f.get('kickoff_time'),
+            'home_score': f.get('team_h_score'), 'away_score': f.get('team_a_score'),
         }
         result.setdefault(home, []).append(info)
         result.setdefault(away, []).append(info)
@@ -265,7 +270,7 @@ def week_data(gw, bootstrap, events, players_db, clubs_db):
                 raise ValueError(f'GW{gw}: no Draft points for player {pid}')
             fixture = fixture_display(details.get('club_id'), by_club, clubs_db)
             roster.append({
-                'id': pid, 'position': pos,
+                'id': pid, 'position': pos, 'club_id': details.get('club_id', 0),
                 'name': details.get('name', f'Player {pid}'),
                 'club': clubs_db.get(details.get('club_id'), {}).get('short', '—'),
                 'position_type': details.get('position_type', 0),
@@ -273,6 +278,18 @@ def week_data(gw, bootstrap, events, players_db, clubs_db):
                 'points': pts,
                 'minutes': safe_int(live_stats.get('minutes')),
                 'multiplier': safe_int(pick.get('multiplier', 1)),
+                'injury_status': details.get('availability','a') if gw == event_info(bootstrap)[0] else 'historical',
+                'injury_news': details.get('injury_news','') if gw == event_info(bootstrap)[0] else '',
+                'chance_next': details.get('chance_next') if gw == event_info(bootstrap)[0] else None,
+                'yellow_cards': safe_int(live_stats.get('yellow_cards')),
+                'red_cards': safe_int(live_stats.get('red_cards')),
+                'goals': safe_int(live_stats.get('goals_scored')),
+                'assists': safe_int(live_stats.get('assists')),
+                'clean_sheets': safe_int(live_stats.get('clean_sheets')),
+                'bonus': safe_int(live_stats.get('bonus')),
+                'starts': safe_int(live_stats.get('starts')),
+                'expected_goals': live_stats.get('expected_goals'),
+                'expected_assists': live_stats.get('expected_assists'),
                 **fixture,
             })
         # TOUCHLINE RULE: only the eleven players in positions 1–11 score.
@@ -292,6 +309,7 @@ def week_data(gw, bootstrap, events, players_db, clubs_db):
         'finished': bool(meta.get('finished')),
         'deadline': meta.get('deadline_time'),
         'fixtures_known': bool(by_club),
+        'fixture_results': [f for club, ff in by_club.items() for f in ff if f['home'] == club],
     }
 
 
@@ -339,6 +357,25 @@ def update_summaries(state):
             'weeks_found': count, 'weeks_expected': max_week, 'complete': count == max_week,
         })
     overall.sort(key=lambda x: (-x['total'], x['name']))
+    # Movement inside the biweekly round: rank after week 1 vs rank after week 2.
+    for r in rounds:
+        previous = sorted([x for x in r['standings'] if isinstance(x['gw1'],int)], key=lambda x:(-x['gw1'], x['name']))
+        old_ranks = {x['name']: i+1 for i,x in enumerate(previous)}
+        for i,x in enumerate(r['standings']):
+            x['previous_rank'] = old_ranks.get(x['name'])
+            x['rank_change'] = x['previous_rank']-(i+1) if x['previous_rank'] is not None and x['complete'] else None
+            x['week_change'] = (x['gw2']-x['gw1']) if isinstance(x['gw1'],int) and isinstance(x['gw2'],int) else None
+    state['rounds'] = {r['label']: r for r in rounds}
+    previous_overall = []
+    for m in MANAGERS:
+        vals = [state['scores'].get(str(g),{}).get(m['name']) for g in range(1,max_week)]
+        if all(isinstance(v,int) for v in vals) and len(vals)==max_week-1:
+            previous_overall.append({'name':m['name'],'total':sum(vals)})
+    old_positions = {x['name']:i+1 for i,x in enumerate(sorted(previous_overall,key=lambda x:(-x['total'],x['name'])))} if len(previous_overall)==len(MANAGERS) else {}
+    for i,x in enumerate(overall):
+        x['previous_rank'] = old_positions.get(x['name']) if x['complete'] else None
+        x['rank_change'] = x['previous_rank']-(i+1) if x['previous_rank'] is not None else None
+        x['current_week_points']=state['scores'].get(str(max_week),{}).get(x['name'])
     state['overall'] = overall
 
 
@@ -349,13 +386,26 @@ def load_config():
         return {}
 
 
-def waiver_data(config):
+def waiver_data(config, state=None):
     # Do not invent an official waiver order from league rank: priority shifts on successful claims.
+    # Standings-relative priority is NOT guaranteed to equal the official rotating waiver queue.
+    # Only use fully loaded season data; otherwise display the supplied historical snapshot.
+    if config.get('waiver_mode') == 'standings_reverse':
+        overall=(state or {}).get('overall',[])
+        if len(overall)==len(MANAGERS) and all(x.get('complete') for x in overall):
+            ordered=sorted(overall,key=lambda x:(x['total'],x['name']))
+            return {'source':'standings_computed','order':[x['name'] for x in ordered],
+                'note':'Automatic inverse ranking from Touchline XI-only season totals; not confirmed official waiver processing priority.'}
+        snapshot=config.get('standings_snapshot',{})
+        if len(snapshot)==len(MANAGERS) and all(m['name'] in snapshot for m in MANAGERS):
+            ordered=sorted(MANAGERS,key=lambda m:(safe_int(snapshot[m['name']]),m['name']))
+            return {'source':'standings_snapshot','order':[m['name'] for m in ordered],
+                'note':'Based on supplied historical league standings. Updates when complete season data becomes available; not the confirmed live waiver queue.'}
     manual = config.get('waiver_order', [])
     names = {m['name'] for m in MANAGERS}
     if (isinstance(manual, list) and len(manual) == len(names)
             and set(manual) == names):
-        return {'source': 'manual', 'order': manual}
+        return {'source': 'manual', 'order': manual, 'note': str(config.get('waiver_order_note', 'Commissioner-configured waiver order.'))}
     league_id = safe_int(config.get('league_id'))
     if league_id:
         try:
@@ -375,15 +425,50 @@ def waiver_data(config):
     return {'source': 'unavailable', 'order': []}
 
 
+
+
+def verified_briefings():
+    """Optional commissioner-curated briefings; never scraped or AI-invented."""
+    path = ROOT / 'press_conferences.json'
+    if not path.exists():
+        return {}
+    try:
+        records = json.loads(path.read_text(encoding='utf8'))
+        if not isinstance(records, list):
+            return {}
+        result = {}
+        for record in records:
+            if not isinstance(record, dict):
+                continue
+            pid = safe_int(record.get('player_id'))
+            url = str(record.get('source_url',''))
+            date = str(record.get('date',''))
+            if not pid or not url.startswith('https://') or not date or not record.get('headline'):
+                continue
+            result[pid] = {'headline':str(record['headline'])[:240],
+                           'date':date[:20], 'source_url':url[:600]}
+        return result
+    except (OSError, ValueError, TypeError):
+        return {}
+
 def refresh_one(gw, bootstrap, events, player_db, clubs):
     scores, players, sources, info = week_data(gw, bootstrap, events, player_db, clubs)
+    briefings = verified_briefings()
+    for manager,team in players.items():
+        for player in team['roster']:
+            if player['id'] in briefings and gw == event_info(bootstrap)[0]:
+                player['press_briefing'] = briefings[player['id']]
     with state_lock:
         state = load()
         state['scores'][str(gw)] = scores
         state['players'][str(gw)] = players
         state['score_sources'][str(gw)] = sources
         state['week_status'][str(gw)] = info
+        state['club_results'][str(gw)] = info.get('fixture_results', [])
+        for manager, team in players.items():
+            team['projections'] = prediction(state, gw, team['roster'])
         update_summaries(state)
+        state['waivers'] = waiver_data(load_config(), state)
         save(state)
 
 
@@ -398,8 +483,8 @@ def worker():
                 state = load()
                 state['gameweek'] = current
                 state['managers'] = MANAGERS
-                state['waivers'] = waiver_data(load_config())
                 update_summaries(state)
+                state['waivers'] = waiver_data(load_config(), state)
                 save(state)
             # Current first: all six managers appear quickly after a Render cold start.
             refresh_one(current, bootstrap, events, player_db, clubs)
@@ -429,6 +514,8 @@ def worker():
                     state['history_updated_at'] = datetime.now(timezone.utc).isoformat()
                     state['history_errors'] = errors
                     update_summaries(state)
+                    for manager, team in state.get('players',{}).get(str(current),{}).items():
+                        team['projections'] = prediction(state, current, team.get('roster',[]))
                     save(state)
                 last_history = time.time()
         except Exception as exc:

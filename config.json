@@ -1,4 +1,21 @@
 {
   "league_id": null,
-  "waiver_order": []
+  "waiver_order": [
+    "Daviel",
+    "Jaden",
+    "Eddy",
+    "Albert",
+    "Andrew",
+    "Saul"
+  ],
+  "waiver_order_note": "Automatic standings-based estimate, not official current rotating priority",
+  "waiver_mode": "standings_reverse",
+  "standings_snapshot": {
+    "Saul": 414,
+    "Andrew": 374,
+    "Albert": 349,
+    "Eddy": 314,
+    "Jaden": 306,
+    "Daviel": 293
+  }
 }
