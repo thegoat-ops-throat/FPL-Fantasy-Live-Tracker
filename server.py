@@ -11,15 +11,19 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from projection_model import prediction
+from transfer_watch import generate_watch
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'scores.json'
 CONFIG = ROOT / 'config.json'
 EXTERNAL_INPUTS = ROOT / 'external_projection_inputs.json'
 BASE = 'https://draft.premierleague.com/api'
+FPL_BASE = 'https://fantasy.premierleague.com/api'
+HISTORICAL_FETCH_BATCH = 12
 MANAGERS = [
     {'name': 'Saul', 'team': 'Saulitos', 'id': 393832},
     {'name': 'Albert', 'team': 'gospurs', 'id': 365375},
@@ -45,8 +49,10 @@ def default_state():
         'managers': MANAGERS, 'scores': {}, 'players': {},
         'score_sources': {}, 'week_status': {}, 'rounds': {}, 'history': [],
         'provisional': True, 'waivers': {'source': 'unavailable', 'order': []},
-        'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-XI-statistical-v3',
+        'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-and-past-seasons-weighted-v4',
+        'historical_seasons': {}, 'historical_checked': {}, 'historical_fetch_status': 'Not checked',
         'projection_sources': ['FPL Draft'],
+        'transfer_watch': {'top10': [], 'candidates': [], 'manual_lineup_previews': [], 'availability_note': 'Awaiting Draft data'},
     }
 
 
@@ -131,6 +137,7 @@ def player_index(bootstrap):
         ).strip() or f'Player {pid}'
         result[pid] = {
             'name': name,
+            'code': safe_int(p.get('code')),
             'club_id': safe_int(p.get('team')),
             'position_type': safe_int(p.get('element_type')),
             'shirt_number': safe_int(p.get('shirt_number')),
@@ -439,6 +446,72 @@ def waiver_data(config, state=None):
 
 
 
+
+def fetch_public_fpl(path, timeout=9):
+    req = urllib.request.Request(FPL_BASE + path, headers={
+        'User-Agent': 'Mozilla/5.0 (compatible; TouchlineHistory/3.0)',
+        'Accept': 'application/json'})
+    with urllib.request.urlopen(req, timeout=timeout) as response:
+        return json.load(response)
+
+
+def fetch_past_seasons(player_db, current):
+    """Best-effort prior-season player summary refresh.
+
+    Uses player CODE to match Draft and main FPL IDs. IDs can differ, so
+    we never equate them without this match. Missing history stays missing.
+    Limits per cycle and caches checked results to avoid hammering the API.
+    """
+    with state_lock:
+        state = load()
+        checked = state.get('historical_checked', {})
+        active = state.get('players', {}).get(str(current), {})
+        ids = {p.get('id') for team in active.values() for p in team.get('roster', [])}
+        now = time.time()
+        pending = [pid for pid in ids if safe_int(pid) in player_db
+                   and (now - float(checked.get(str(pid), 0))) > 3 * 24 * 3600]
+    if not pending:return
+    try:
+        main = fetch_public_fpl('/bootstrap-static/', timeout=14)
+        code_map = {safe_int(x.get('code')): safe_int(x.get('id'))
+                    for x in rows(main.get('elements', []))
+                    if safe_int(x.get('code')) and safe_int(x.get('id'))}
+    except (ValueError, TypeError, urllib.error.URLError, OSError) as exc:
+        with state_lock:
+            state=load();state['historical_fetch_status']='Past seasons unavailable: '+str(exc)[:90];save(state)
+        return
+    todo=[]
+    unmatched=[]
+    for pid in sorted(pending)[:HISTORICAL_FETCH_BATCH]:
+        code=safe_int(player_db[pid].get('code'))
+        main_id=code_map.get(code)
+        if main_id:todo.append((pid,main_id))
+        else:unmatched.append(pid)
+    def get(entry):
+        pid,main_id=entry
+        payload=fetch_public_fpl(f'/element-summary/{main_id}/', timeout=9)
+        history=payload.get('history_past', [])
+        return pid,history if isinstance(history,list) else []
+    successes={};failures=[]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures=[pool.submit(get,x) for x in todo]
+        for f in as_completed(futures):
+            try:
+                pid, history=f.result();successes[str(pid)]=history
+            except Exception:
+                failures.append(True)
+    with state_lock:
+        state=load();existing=state.setdefault('historical_seasons',{})
+        last=state.setdefault('historical_checked',{})
+        for pid,hist in successes.items():existing[pid]=hist;last[pid]=now
+        for pid in unmatched:last[str(pid)]=now
+        state['historical_fetch_status']=f'Past seasons matched for {len(successes)} players this pass; {len(failures)} fetch failures.'
+        # Recalculate current players using newly retrieved historic seasons.
+        for team in state.get('players',{}).get(str(current),{}).values():
+            team['projections']=prediction(state,current,team.get('roster',[]),external_projection_inputs())
+        save(state)
+
+
 def external_projection_inputs():
     """Merge optional manual inputs with a permissioned HTTPS JSON feed.
 
@@ -547,6 +620,10 @@ def worker():
             # Current first: all six managers appear quickly after a Render cold start.
             refresh_one(current, bootstrap, events, player_db, clubs)
             with state_lock:
+                st=load()
+                st['transfer_watch']=generate_watch(bootstrap, st.get('players',{}).get(str(current),{}), current, clubs, ROOT/'manager_lineup_watch.json')
+                save(st)
+            with state_lock:
                 state = load()
                 state['updated_at'] = datetime.now(timezone.utc).isoformat()
                 state['status'] = 'Live Draft XI-only points loaded (bench excluded)'
@@ -576,6 +653,8 @@ def worker():
                         team['projections'] = prediction(state, current, team.get('roster',[]), external_projection_inputs())
                     save(state)
                 last_history = time.time()
+            # Best-effort history: current scores remain available even if FPL history fails.
+            fetch_past_seasons(player_db, current)
         except Exception as exc:
             with state_lock:
                 state = load()

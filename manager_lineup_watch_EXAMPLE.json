@@ -1,0 +1,9 @@
+{
+  "gameweek": 9,
+  "manager_lineups": {
+    "Andrew": {
+      "starting_xi_ids": [250, 257, 471, 330, 229, 94, 400, 237, 40, 167, 165],
+      "note": "ILLUSTRATIVE only: these are older GW8 Draft player IDs, NOT a confirmed GW9 lineup. Replace all IDs after the manager supplies a prospective GW9 XI."
+    }
+  }
+}

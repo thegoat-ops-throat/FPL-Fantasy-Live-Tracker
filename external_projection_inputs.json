@@ -12,7 +12,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 257,
@@ -26,7 +29,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 471,
@@ -40,7 +46,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 167,
@@ -54,7 +63,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 165,
@@ -68,7 +80,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 467,
@@ -82,7 +97,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 384,
@@ -96,7 +114,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     },
     {
       "player_id": 1,
@@ -110,7 +131,10 @@
       "fixture_adjustment": null,
       "note": "",
       "source_url": "",
-      "source_date": ""
+      "source_date": "",
+      "fotmob_avg_rating": null,
+      "fotmob_recent_xg": null,
+      "fotmob_recent_xa": null
     }
   ]
 }
