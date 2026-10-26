@@ -32,7 +32,7 @@
 .activity-picker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:15px}
 @media(max-width:750px){.activity-grid{grid-template-columns:1fr}}
 @media(max-width:400px){.activity-swap{gap:4px}.activity-player{padding:7px}.activity-player b{font-size:11px}}
-.movement{font-size:11px;font-weight:850;margin-left:7px}.movement.up{color:var(--green)}.movement.down{color:var(--red)}.movement.flat{color:var(--muted)}.medical-icons{position:absolute;top:-7px;left:-8px;display:flex;gap:2px;z-index:5}.medicon{display:inline-grid;place-items:center;min-width:17px;height:19px;border-radius:5px;background:#101f34;border:1px solid #7791ae;font-size:12px;box-shadow:0 1px 3px #092033}.red-card{color:#ff6277}.yellow-card{color:#ffe27c}.analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}.analysis-tile{border:1px solid #3d5b70;background:#19324a;padding:13px;border-radius:12px}.analysis-tile strong{font-size:20px;color:var(--lime);display:block}.analysis-tile small{font-size:11px;color:var(--muted)}.analysis-list{font-size:13px;color:#d8e8fa;line-height:1.8;padding-left:21px}@media(max-width:550px){.analysis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.movement{font-size:11px;font-weight:850;margin-left:7px}.movement.up{color:var(--green)}.movement.down{color:var(--red)}.movement.flat{color:var(--muted)}.medical-icons{position:absolute;top:-7px;left:-8px;display:flex;gap:2px;z-index:5}.medicon{display:inline-grid;place-items:center;min-width:17px;height:19px;border-radius:5px;background:#101f34;border:1px solid #7791ae;font-size:12px;box-shadow:0 1px 3px #092033}.injury-icon{background:#173d49;border-color:#57b9bf;font-size:13px}.red-card{color:#ff6277}.yellow-card{color:#ffe27c}.analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}.analysis-tile{border:1px solid #3d5b70;background:#19324a;padding:13px;border-radius:12px}.analysis-tile strong{font-size:20px;color:var(--lime);display:block}.analysis-tile small{font-size:11px;color:var(--muted)}.analysis-list{font-size:13px;color:#d8e8fa;line-height:1.8;padding-left:21px}@media(max-width:550px){.analysis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* Player projections and explainable matchup profiles */
 .footballer.proj-click{cursor:pointer;border-radius:9px;padding-top:2px}.footballer.proj-click:hover,.footballer.proj-click:focus-visible,.footballer.proj-click.selected{outline:2px solid var(--lime);outline-offset:3px}
@@ -41,6 +41,24 @@
 .proj-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.proj-stat{background:#233e55;border-radius:9px;padding:11px}.proj-stat b{font-size:21px;color:var(--lime);display:block}.proj-stat small{font-size:10px;color:var(--muted)}
 .proj-note{font-size:12px;color:#c4d4e5;line-height:1.65}.proj-close{background:#263e56;color:white;border:1px solid #668198;padding:7px 11px;border-radius:9px;float:right}
 @media(max-width:920px){.lineup-stage{grid-template-columns:1fr}.projection-side{position:static}}@media(max-width:500px){.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Touchline 2.8: centered, readable player insights with a balanced pitch */
+.lineup-stage{grid-template-columns:minmax(0,1.45fr) minmax(330px,430px);gap:20px}
+.projection-side{top:76px}
+.projection-shell{min-height:240px;text-align:center;border-style:solid;box-shadow:0 12px 30px #020b1b33}
+.projection-shell .source-pills{justify-content:center}
+.proj-card{padding:22px 16px;border:0;background:transparent;text-align:center}
+.proj-card h2{font-size:clamp(21px,2.5vw,27px);overflow-wrap:anywhere;line-height:1.25}
+.proj-card .eyebrow{text-align:center}
+.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+.proj-stat{padding:16px 8px;border:1px solid #49657c;background:#223b52;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:106px;gap:7px}
+.proj-stat b{font-size:clamp(18px,2.4vw,25px);line-height:1.2;overflow-wrap:anywhere;text-align:center;letter-spacing:-.025em}
+.proj-stat small{font-size:11px;line-height:1.3;max-width:140px;text-align:center}
+.proj-note{text-align:left;font-size:13px;line-height:1.6}
+.proj-close{float:none;display:block;margin:0 0 9px auto}
+.activity-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+@media(max-width:1020px){.lineup-stage{grid-template-columns:1fr}.projection-side{position:static}.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.activity-grid{grid-template-columns:1fr}.proj-stat b{font-size:21px}}
 </style>
 </head>
 <body>
@@ -61,26 +79,18 @@
 <div><div class="panel"><div class="eyebrow">MATCH CENTER</div><h2>Current Gameweek</h2><p class="muted" id="current-week-note">Waiting for data…</p><div class="legend" style="margin:16px 0"><span class="legend-item"><i class="dot live"></i>Live</span><span class="legend-item"><i class="dot finished"></i>Played</span><span class="legend-item"><i class="dot upcoming"></i>Yet to play</span></div><p class="note-inline" id="sync-line">Checking live data…</p></div><div class="panel"><div class="eyebrow">JUMP TO</div><h2>Season summary</h2><p class="tiny">Track total points and compare every manager's progress from GW1.</p><button class="back" data-jump="overall" type="button">View overall standings →</button></div></div></div>
 <div class="section-head"><div><div class="eyebrow">THE LEAGUE</div><h2>Explore managers</h2><p>Select a manager to see their formation, 15 players, and substitutions.</p></div></div><div id="manager-grid" class="team-grid"></div>
 </section>
-<section class="view" id="overall"><div class="section-head"><div><div class="eyebrow">SEASON-LONG COMPETITION</div><h2>Overall fantasy standings</h2><p>Total Draft fantasy points accumulated from Gameweek 1 onward.</p></div></div><div class="panel"><div id="overall-ranks" class="rank-list"></div><p id="overall-note" class="note-inline"></p></div><div class="panel"><div class="eyebrow">LEAGUE TABLE SNAPSHOT</div><h2>Standings you supplied</h2><p class="tiny">Historical league snapshot, date/Gameweek not supplied · Official league points as pasted, not Touchline’s custom starting-XI totals. These numbers do not update automatically.</p><div id="snapshot-ranks" class="rank-list"></div></div></section>
+<section class="view" id="overall"><div class="section-head"><div><div class="eyebrow">SEASON-LONG COMPETITION</div><h2>Overall fantasy standings</h2><p>Total Draft fantasy points accumulated from Gameweek 1 onward.</p></div></div><div class="panel"><div id="overall-ranks" class="rank-list"></div><p id="overall-note" class="note-inline"></p></div></section>
 <section class="view" id="lineups"><div class="section-head"><div><div class="eyebrow">LIVE TEAM CENTER</div><h2>Matchday lineups</h2><p>Lineups update automatically when managers make transfers for the next Gameweek.</p></div></div>
 <div class="panel"><div class="selector-row"><label for="manager-select">Manager</label><select id="manager-select"></select><label for="week-select">Gameweek</label><select id="week-select"></select></div><div id="lineup-content"><div class="empty">Waiting for team data…</div></div></div></section>
 <section class="view" id="archive"><div class="section-head"><div><div class="eyebrow">THE RECORD BOOK</div><h2>Gameweek archives</h2><p>Every two-week matchup: GW1–2, GW3–4, GW5–6, GW7–8, and beyond.</p></div></div><div id="archives" class="arch-grid"></div><div id="archive-detail" class="panel arch-detail" hidden></div></section>
 <section class="view" id="waivers"><div class="section-head"><div><div class="eyebrow">TRANSACTION CENTER</div><h2>Waiver-wire priority</h2><p>Estimated priority tracks reverse season standings as scores change, when full data is available.</p></div></div><div class="panel"><div id="waiver-ranks" class="rank-list"></div><p id="waiver-note" class="note-inline"></p></div><div class="panel soft"><div class="eyebrow">HOW IT WORKS</div><h2>Waiver rules</h2><p class="tiny">The Draft waiver queue can change after successful claims, so overall league rank alone does not reveal the current waiver priority. The estimated standings-based order updates automatically when all Gameweek scores are loaded. It is not the official claim-processing order; use official league priority to determine actual waivers.</p></div></section>
-<section class="view" id="activity"><div class="section-head"><div><div class="eyebrow">LEAGUE ACTIVITY</div><h2>Last week's waiver activity</h2><p>Transactions and claims from the list you supplied. Repeated claims are retained as separate entries; their success is not verified.</p></div></div><div class="panel"><div class="activity-picker"><label class="tiny" for="activity-manager">Filter manager</label><select id="activity-manager"><option value="all">All managers</option><option value="DR">Daviel · DR</option><option value="EC">Eddy · EC</option><option value="AG">Albert · AG</option><option value="AA">Andrew · AA</option><option value="SG">Saul · SG</option><option value="JA">Jaden · JA</option></select></div><div id="activity-summary" class="activity-summary"></div><div id="activity-items" class="activity-grid"></div><p class="note-inline">Source: user-provided waiver list labeled “last week's transfers” (exact date not specified). “WA” is preserved as supplied. These rows are not proof each claim succeeded and do not determine the current waiver priority.</p></div></section>
+<section class="view" id="activity"><div class="section-head"><div><div class="eyebrow">LEAGUE ACTIVITY</div><h2>Confirmed squad changes</h2><p>Only players actually added to or removed from a manager’s squad between two recorded Gameweeks appear here. Unsuccessful waiver requests are excluded.</p></div></div><div class="panel"><div class="activity-picker"><label class="tiny" for="activity-manager">Filter manager</label><select id="activity-manager"><option value="all">All managers</option><option value="DR">Daviel · DR</option><option value="EC">Eddy · EC</option><option value="AG">Albert · AG</option><option value="AA">Andrew · AA</option><option value="SG">Saul · SG</option><option value="JA">Jaden · JA</option></select></div><div id="activity-summary" class="activity-summary"></div><div id="activity-items" class="activity-grid"></div><p class="note-inline">Changes are confirmed from successive Draft Gameweek rosters after the later deadline has passed. The exact transaction mechanism (waiver, free-agent signing, or trade) is not assumed; individual add/drop pairings are shown only where unambiguous.</p></div></section>
 </main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
 <script>
 'use strict';
 const fallbackManagers=[{name:'Saul',team:'Saulitos',id:393832},{name:'Albert',team:'gospurs',id:365375},{name:'Eddy',team:"It's called soccer",id:372793},{name:'Daviel',team:'LIVERPOOL',id:372999},{name:'Jaden',team:'gooner',id:365166},{name:'Andrew',team:'Bleed Blue',id:372608}];
-const LEAGUE_SNAPSHOT=[
-{name:'Saul',team:'Saulitos',gw:27,total:414},
-{name:'Andrew',team:'Bleed Blue',gw:30,total:374},
-{name:'Albert',team:'gospurs',gw:37,total:349},
-{name:'Eddy',team:"It's called soccer",gw:7,total:314},
-{name:'Jaden',team:'gooner',gw:35,total:306},
-{name:'Daviel',team:'LIVERPOOL',gw:8,total:293}
-];
 const ACTIVITY_MANAGERS={DR:'Daviel',EC:'Eddy',AG:'Albert',AA:'Andrew',SG:'Saul',JA:'Jaden'};
-const WAIVER_ACTIVITY=[{"manager": "DR", "incoming": {"name": "Boscagli", "club": "BHA", "position": "DEF"}, "outgoing": {"name": "Justin", "club": "LEE", "position": "DEF"}, "type": "WA"}, {"manager": "EC", "incoming": {"name": "Boscagli", "club": "BHA", "position": "DEF"}, "outgoing": {"name": "Branthwaite", "club": "EVE", "position": "DEF"}, "type": "WA"}, {"manager": "EC", "incoming": {"name": "Manzambi", "club": "AVL", "position": "MID"}, "outgoing": {"name": "Semenyo", "club": "MCI", "position": "MID"}, "type": "WA"}, {"manager": "AG", "incoming": {"name": "Muharemović", "club": "LEE", "position": "DEF"}, "outgoing": {"name": "Kayode", "club": "BRE", "position": "DEF"}, "type": "WA"}, {"manager": "AA", "incoming": {"name": "Ndiaye", "club": "MCI", "position": "MID"}, "outgoing": {"name": "Scott", "club": "BOU", "position": "MID"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Lewis-Potter", "club": "BRE", "position": "MID"}, "outgoing": {"name": "Belloumi", "club": "HUL", "position": "MID"}, "type": "WA"}, {"manager": "EC", "incoming": {"name": "Eze", "club": "ARS", "position": "MID"}, "outgoing": {"name": "Enzo", "club": "MCI", "position": "MID"}, "type": "WA"}, {"manager": "AA", "incoming": {"name": "Boscagli", "club": "BHA", "position": "DEF"}, "outgoing": {"name": "O'Reilly", "club": "MCI", "position": "DEF"}, "type": "WA"}, {"manager": "AA", "incoming": {"name": "Neto", "club": "CHE", "position": "MID"}, "outgoing": {"name": "Scott", "club": "BOU", "position": "MID"}, "type": "WA"}, {"manager": "AA", "incoming": {"name": "Leno", "club": "FUL", "position": "GKP"}, "outgoing": {"name": "Suzuki", "club": "AVL", "position": "GKP"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Neto", "club": "CHE", "position": "MID"}, "outgoing": {"name": "Belloumi", "club": "HUL", "position": "MID"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Iwobi", "club": "FUL", "position": "MID"}, "outgoing": {"name": "Belloumi", "club": "HUL", "position": "MID"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Dewsbury-Hall", "club": "EVE", "position": "MID"}, "outgoing": {"name": "Belloumi", "club": "HUL", "position": "MID"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Murillo", "club": "NFO", "position": "DEF"}, "outgoing": {"name": "Egan", "club": "HUL", "position": "DEF"}, "type": "WA"}, {"manager": "EC", "incoming": {"name": "Rushworth", "club": "COV", "position": "GKP"}, "outgoing": {"name": "Kinsky", "club": "TOT", "position": "GKP"}, "type": "WA"}, {"manager": "AA", "incoming": {"name": "Bassey", "club": "FUL", "position": "DEF"}, "outgoing": {"name": "J.Timber", "club": "ARS", "position": "DEF"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Muharemović", "club": "LEE", "position": "DEF"}, "outgoing": {"name": "Egan", "club": "HUL", "position": "DEF"}, "type": "WA"}, {"manager": "SG", "incoming": {"name": "Castagne", "club": "FUL", "position": "DEF"}, "outgoing": {"name": "Egan", "club": "HUL", "position": "DEF"}, "type": "WA"}];
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let data={gameweek:8,managers:fallbackManagers,scores:{},players:{},overall:[],rounds:{},waivers:{order:[],source:'unavailable'},week_status:{},score_sources:{}};
@@ -117,7 +127,6 @@ function renderHome(){
 function renderOverall(){const table=data.overall||[];
  $('overall-ranks').innerHTML=table.length?table.map((m,i)=>rankMarkup(m,i,'overall')).join(''):'<div class="empty">Loading season totals from the Draft API…</div>';
  bindOpen($('overall-ranks'));
- $('snapshot-ranks').innerHTML=LEAGUE_SNAPSHOT.map((m,i)=>`<div class="rank ${i===0?'first':''}"><div class="place">${i+1}</div><div class="rank-body"><strong>${esc(m.name)} · ${esc(m.team)}</strong><small>Snapshot GW points: ${m.gw}</small></div><div class="rank-score">${m.total}<small>pts</small></div></div>`).join('');
  $('overall-note').textContent=table.some(m=>!m.complete)?'Season totals marked partial are the sum of Gameweeks successfully retrieved so far, not confirmed season totals. Older Gameweeks are fetched in the background.':'All Gameweek scores are available. Touchline totals use only the 11 players currently listed in starting positions, without bench substitution points.';
 }
 function renderArchives(){
@@ -137,12 +146,48 @@ function renderWaivers(){const val=data.waivers||{};const order=val.order||[];
  $('waiver-ranks').innerHTML=order.length?order.map((name,i)=>rankMarkup({name,team:names().find(m=>m.name===name)?.team},i,'waiver')).join(''):'<div class="empty">Official waiver priority is not available from the verified data. Add the current order to <strong>config.json</strong> to display the commissioner-confirmed queue. We won’t invent an order from the league table.</div>';
  $('waiver-note').textContent=['standings_computed','standings_snapshot'].includes(val.source)?val.note:val.source==='league_api'?'Source: Draft league API. The order can change after successful claims.':val.source==='manual'?(val.note || 'Standings-based order from the supplied table; not a verified current waiver queue.'):'Waiver priority is separate from season standings.';
 }
+function confirmedRosterChanges(){
+ const weeks=Object.keys(data.players||{}).map(Number).filter(Number.isInteger).sort((a,b)=>a-b);
+ const changes=[];const managers=names();
+ for(const gw of weeks){
+  if(gw<2||!data.players[String(gw-1)])continue;
+  const deadline=data.week_status?.[String(gw)]?.deadline;
+  // Only compare a new squad after its Gameweek deadline. If the deadline is unknown, omit it.
+  if(!deadline||new Date(deadline).getTime()>Date.now())continue;
+  for(const m of managers){
+   const oldData=data.players[String(gw-1)]?.[m.name]?.roster;
+   const newData=data.players[String(gw)]?.[m.name]?.roster;
+   if(!Array.isArray(oldData)||oldData.length!==15||!Array.isArray(newData)||newData.length!==15)continue;
+   const oldIds=new Set(oldData.map(p=>p.id)),newIds=new Set(newData.map(p=>p.id));
+   const added=newData.filter(p=>!oldIds.has(p.id));
+   const removed=oldData.filter(p=>!newIds.has(p.id));
+   if(!added.length&&!removed.length)continue;
+   const pos=p=>p.position_type;
+   const remainingIn=[...added],remainingOut=[...removed];
+   // Pair a swap only if exactly one incoming and one outgoing player have this position.
+   for(const pt of [1,2,3,4]){
+    const ins=remainingIn.filter(p=>pos(p)===pt),outs=remainingOut.filter(p=>pos(p)===pt);
+    if(ins.length===1&&outs.length===1){
+     changes.push({manager:m.name,gw,incoming:ins[0],outgoing:outs[0],type:'roster change'});
+     remainingIn.splice(remainingIn.indexOf(ins[0]),1);
+     remainingOut.splice(remainingOut.indexOf(outs[0]),1);
+    }
+   }
+   // Multi-move cases: show additions and departures separately instead of inventing a pairing.
+   for(const entry of remainingIn)changes.push({manager:m.name,gw,incoming:entry,type:'addition'});
+   for(const entry of remainingOut)changes.push({manager:m.name,gw,outgoing:entry,type:'departure'});
+  }
+ }
+ return changes.sort((a,b)=>b.gw-a.gw||a.manager.localeCompare(b.manager));
+}
 function renderActivity(){
- const choice=$('activity-manager').value;
- const shown=WAIVER_ACTIVITY.filter(t=>choice==='all'||t.manager===choice);
- const counts={};for(const row of WAIVER_ACTIVITY)counts[row.manager]=(counts[row.manager]||0)+1;
- $('activity-summary').innerHTML=`<span>${shown.length} listed entries</span><span>${new Set(shown.map(t=>t.manager)).size} managers</span><span>Type: WA · claim outcomes unverified</span>`;
- $('activity-items').innerHTML=shown.map((t,i)=>`<div class="activity-card"><div class="activity-top"><span class="activity-name">${esc(ACTIVITY_MANAGERS[t.manager]||t.manager)} <span class="tiny">(${esc(t.manager)})</span></span><span class="chip">${esc(t.type)}</span></div><div class="activity-swap"><div class="activity-player in"><div class="move-label">IN</div><b>${esc(t.incoming.name)}</b><small>${esc(t.incoming.club)} · ${esc(t.incoming.position)}</small></div><span class="activity-arrow">⇄</span><div class="activity-player out"><div class="move-label">OUT</div><b>${esc(t.outgoing.name)}</b><small>${esc(t.outgoing.club)} · ${esc(t.outgoing.position)}</small></div></div></div>`).join('')||'<div class="empty">No listed transactions for this manager.</div>';
+ const selected=$('activity-manager').value;
+ const all=confirmedRosterChanges();
+ const shown=all.filter(t=>selected==='all'||ACTIVITY_MANAGERS[selected]===t.manager);
+ const fullWeeks=Object.keys(data.players||{}).filter(w=>Object.keys(data.players?.[w]||{}).length===names().length).length;
+ $('activity-summary').innerHTML=`<span>${shown.length} observed changes</span><span>${new Set(shown.map(t=>t.manager)).size} managers</span><span>${fullWeeks} loaded full-squad weeks</span>`;
+ const player=p=>p?`<b>${esc(p.name)}</b><small>${esc(p.club||'Club unknown')} · ${['','GKP','DEF','MID','FWD'][p.position_type]||'Position unknown'}</small>`:'<b>—</b><small>No matching player movement</small>';
+ $('activity-items').innerHTML=shown.map(t=>`<div class="activity-card"><div class="activity-top"><span class="activity-name">${esc(t.manager)} <span class="tiny">· GW${t.gw-1} → GW${t.gw}</span></span><span class="chip">Roster confirmed</span></div><div class="activity-swap"><div class="activity-player in"><div class="move-label">JOINED SQUAD</div>${player(t.incoming)}</div><span class="activity-arrow">⇄</span><div class="activity-player out"><div class="move-label">LEFT SQUAD</div>${player(t.outgoing)}</div></div></div>`).join('')||'<div class="empty">No confirmed squad movements are available for this selection yet. Touchline needs two consecutive Gameweek lineups after the later deadline before showing a change.</div>';
 }
 $('activity-manager').addEventListener('change',renderActivity);
 function openManager(name){selectedManager=name;selectedGW=Number(data.gameweek)||8;tab('lineups')}
@@ -201,13 +246,13 @@ function statusClass(player){return player.match_status==='finished'?'finished':
 function playerCard(p,substitutions=[]){const confirmedIn=substitutions.find(s=>s.in_id===p.id);const confirmedOut=substitutions.find(s=>s.out_id===p.id);
  const wasSub=!!confirmedIn||!!confirmedOut;const badge=confirmedIn?'↑':confirmedOut?'↓':'';
  const injury=['i','d','u','s'].includes(p.injury_status)&&p.injury_news;
- const warnings=[injury?`<span class="medicon" title="${esc(p.injury_news)}">✚</span>`:'',p.red_cards?`<span class="medicon red-card" title="${p.red_cards} red card(s) this Gameweek; suspension duration is not confirmed here">🟥</span>`:'',p.yellow_cards?`<span class="medicon yellow-card" title="${p.yellow_cards} yellow card(s) this Gameweek">🟨</span>`:''].join('');
+ const warnings=[injury?`<span class="medicon injury-icon" title="Injury / availability concern: ${esc(p.injury_news)}">🏥</span>`:'',p.red_cards?`<span class="medicon red-card" title="${p.red_cards} red card(s) this Gameweek; suspension duration is not confirmed here">🟥</span>`:'',p.yellow_cards?`<span class="medicon yellow-card" title="${p.yellow_cards} yellow card(s) this Gameweek">🟨</span>`:''].join('');
 
  return `<div class="footballer proj-click ${p.match_status==='finished'&&!p.minutes?'dnp':''} ${wasSub?'subbed':''}" tabindex="0" role="button" aria-label="Open scouting report for ${esc(p.name)}" data-player="${p.id}" title="Open scouting report for ${esc(p.name)}"><div class="kit-wrap"><div class="medical-icons">${warnings}</div>${shirt(p)}<span class="player-pts">${p.points}</span>${badge?`<span class="submark">${badge}</span>`:''}<span class="player-status">${p.match_status==='live'?'● ':''}${esc(statusLabel(p))}</span></div><div class="player-name">${esc(p.name)}</div><div class="player-fixture">${esc(p.opponent)}</div></div>`
 }
 function playerProjectionMarkup(p,proj,gw){
- const yrank=proj?.position_rank?`#${proj.position_rank} of ${proj.position_rank_pool} tracked players`:'Not enough historical data';
- const opposing=proj?.opponent_strength_rank?`#${proj.opponent_strength_rank} of ${proj.opponent_rank_out_of} teams`:'Not enough verified fixture results';
+ const yrank=proj?.position_rank?`#${proj.position_rank} / ${proj.position_rank_pool}`:'Not enough historical data';
+ const opposing=proj?.opponent_strength_rank?`#${proj.opponent_strength_rank} / ${proj.opponent_rank_out_of||'?'}`:'Not enough verified fixture results';
  const oppStat=p.position_type===1||p.position_type===2?'Opponent attacking strength':'Opponent defensive strength';
  const news=p.press_briefing;
  const conference=news&&news.source_url&&news.date?`<strong>${esc(news.headline||'Team briefing')}</strong> · ${esc(news.date)} · <a href="${esc(news.source_url)}" target="_blank" rel="noopener noreferrer">Source ↗</a>`:'No verified press-conference report has been added for this player.';

@@ -1,46 +1,26 @@
-TOUCHLINE 2.7 — AUTOMATIC DRAFT PROJECTION INPUTS + REAL PLAYER TEMPLATES
+TOUCHLINE 2.8 — CLEAN SCOUT + CONFIRMED TRANSFERS ONLY
 
-UPGRADE EXISTING RENDER PROJECT (same URL)
-Upload the SIX files to your existing GitHub repository root:
-  index.html, server.py, config.json, projection_model.py,
-  press_conferences.json, external_projection_inputs.json
-Render build: echo "No dependencies needed"
-Render start: python server.py
+Update the existing Render project. Upload all six application files from this ZIP
+to the ROOT of your connected GitHub repository. Commit to main.
+Keep Build: echo "No dependencies needed"
+Keep Start: python server.py
 
-AUTOMATIC FEATURES
-- Every 5 minutes while your Render app is awake, server collects FPL Draft
-  player scores, lineups, injuries, fixtures, and (where present) official
-  Draft bootstrap form and points-per-game fields.
-- Projects from previous five Gameweeks; if history is absent and Draft
-  supplies numeric form/points_per_game, falls back to that verified value.
-- Uses completed fixture results for opponent attacking/defensive ranks when
-  the minimum sample is available. Shows insufficient data rather than guessing.
-- Preserves your customized starting XI ONLY actual scoring; does not count bench.
+CHANGES
+- Removed the stale "Standings you supplied" snapshot panel from Overall Standings.
+- Reworked player scout stats into a centered, readable 2-column grid.
+- Deleted the old static 18-entry waiver-claims list.
+- Transfer activity is now derived from consecutive 15-player Draft Gameweek rosters.
+  The newer week's deadline must have passed before changes are shown.
+  Only differences in the squad are shown; claims that did not change a roster
+  do NOT appear. When several players move in one position, additions and
+  departures are displayed separately to avoid inventing exact swaps.
+- "Confirmed" means the membership change was observed in two Gameweek
+  snapshots, NOT that its transaction type (waiver vs trade) is known.
+- Injuries use a hospital (🏥) indicator. Yellow/red cards only display when match card stats are recorded.
+- Custom XI-only scoring is unchanged.
 
-OPTIONAL LICENSED EXTERNAL FEED
-Render > Environment: TOUCHLINE_EXTERNAL_FEED_URL = HTTPS URL to a JSON endpoint
-which you are AUTHORIZED to access. Accepted JSON format:
-{ "players": [ { "player_id": 250, "sources": ["Licensed data"],
- "source_url": "https://provider.example/report", "source_date": "2026-10-25",
- "predicted_minutes": 75, "form_adjustment": 0.3, "note": "..." } ] }
-It overrides matching player entries in the local file. If unavailable, the
-server continues using automatic FPL Draft data and local manual entries.
-This is a generic provider adapter: it does NOT scrape FotMob or Transfermarkt
-or claim direct integration with those sites.
-
-READY-TO-EDIT PLAYER FILE
-external_projection_inputs.json has historical GW8 example IDs for players
-in your league: Leno, Bassey, Milenkovic, Delap, Joao Pedro, Sels,
-Donnarumma and Raya. No performance facts are fabricated. Null fields mean
-not entered, and have NO effect on a projection.
-When adding real FotMob/Premier League/Transfermarkt reporting, supply an
-actual source_url and source_date. Treat player_name_reference as a note only:
-matching is exclusively by verified Draft player_id.
-
-CHECKS & LIMITATIONS
-- Free Render may sleep and does not guarantee stored local history.
-- Source permissions and changing provider schemas matter. Never put keys
-  into GitHub or browser HTML; use Render Environment.
-- Live transfer and suspension information still derives from Draft API.
-- Forecasts are estimates. No external source data is fetched unless the
-  optional authorized feed is configured.
+LIMITATIONS
+The roster comparison detects net changes between Gameweek squads. If a player
+was added and dropped again between the snapshots, it will not appear. The Draft
+API may not provide earlier lineups when a GW is missing; no changes are invented
+for those intervals. Standings-based waiver priority is still an estimate.
