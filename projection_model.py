@@ -110,6 +110,25 @@ def projection_confidence(sample_count, historical_seasons, opponent_known,
     return max(0,min(95,score))
 
 
+def matchup_adjustment(opponent_rank, teams_ranked, position_type):
+    """Opponent relative strength -> moderate-to-strong fantasy projection factor.
+
+    Rank 1 is strongest (best defensive record for attackers, best attack for
+    defenders). Missing or insufficient data is neutral (1.0).
+    For keeper/defenders a difficult attack matters more; for attackers a
+    weak defense matters more. Clamp extremes and do not imply certainty.
+    """
+    if not isinstance(opponent_rank, int) or not isinstance(teams_ranked, int):
+        return 1.0
+    if teams_ranked < 10 or not 1 <= opponent_rank <= teams_ranked:
+        return 1.0
+    normalized = (opponent_rank - 1) / (teams_ranked - 1)  # 0 strongest, 1 weakest
+    centered = (normalized - 0.5) * 2
+    # Full range ~ 0.70–1.30; less volatile for midfielders.
+    sensitivity = {1: 0.30, 2: 0.30, 3: 0.25, 4: 0.30}.get(position_type, 0.25)
+    return round(1 + centered * sensitivity, 4)
+
+
 def prediction(state,gw,roster,external_inputs=None):
     hist,positions=player_history(state,gw)
     attack,defense=team_strength(state,gw)
@@ -150,9 +169,10 @@ def prediction(state,gw,roster,external_inputs=None):
         if isinstance(ext_info.get('availability_factor'),(int,float)):
             factor=max(0,min(1,float(ext_info['availability_factor'])))
         difficulty=1.0
-        if opp_rank is not None:difficulty=max(0.85,min(1.15,0.85+(opp_rank-1)*.30/19))
+        if opp_rank is not None:
+            difficulty=matchup_adjustment(opp_rank,len(attack if opp_kind=='attack' else defense),pos)
         if isinstance(ext_info.get('fixture_adjustment'),(int,float)):
-            difficulty=max(0.75,min(1.25,float(ext_info['fixture_adjustment'])))
+            difficulty=max(0.70,min(1.30,float(ext_info['fixture_adjustment'])))
         minutes_factor=1.0
         if isinstance(ext_info.get('predicted_minutes'),(int,float)):
             minutes_factor=max(0.35,min(1.05,float(ext_info['predicted_minutes'])/90))
@@ -177,7 +197,7 @@ def prediction(state,gw,roster,external_inputs=None):
               isinstance(avail,(int,float)) or bool(player.get('injury_news')),external_verified,baseline is not None)
         notes=['Recent verified FPL Draft points' if not auto_fallback else 'Current Draft-reported form']
         if previous:notes.append('prior-season Premier League Fantasy point totals weighted below current season')
-        if opp_rank is not None:notes.append('verified opponent attack/defense trend')
+        if opp_rank is not None:notes.append(f'opponent strength adjustment {round((difficulty-1)*100):+d}% based on prior finished fixtures')
         if external_verified:notes.append('dated external source inputs')
         result.append({'id':pid,'projected_points':expected,'sample_games':len(sample),
               'avg_recent':round(current_avg,1) if current_avg is not None else None,
@@ -187,6 +207,7 @@ def prediction(state,gw,roster,external_inputs=None):
               'opponent_strength_kind':opp_kind,
               'opponent_rank_out_of':len(attack) if attack else None,
               'availability_factor':round(factor,2),'minutes_projection':ext_info.get('predicted_minutes'),
+              'matchup_multiplier':difficulty,'matchup_adjustment_percent':round((difficulty-1)*100,1),
               'confidence_percent':confidence_pct,
               'confidence':f'{confidence_pct}%',
               'confidence_explanation':'Evidence-coverage index, not chance of scoring predicted points',

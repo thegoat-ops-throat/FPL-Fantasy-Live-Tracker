@@ -114,7 +114,7 @@ let currentView='home',selectedManager='Saul',selectedGW=null,selectedArchive=nu
 const names=()=>data.managers||fallbackManagers;
 const totalOrDash=n=>typeof n==='number'?n.toLocaleString():'—';
 function currentRound(){const gw=Math.max(1,Number(data.gameweek)||8);const first=gw%2===0?gw-1:gw;return data.rounds?.[`GW${first}–GW${first+1}`]||null}
-function tab(view){currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();if(view==='pickups')renderPickups();window.scrollTo({top:0,behavior:'smooth'})}
+function tab(view){if(view==='pickups'&&data.features?.top_10_pickups_enabled===false)return;currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();if(view==='pickups')renderPickups();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>tab(btn.dataset.view)));
 document.querySelectorAll('[data-jump]').forEach(btn=>btn.addEventListener('click',()=>tab(btn.dataset.jump)));
 function rankMarkup(row,index,mode='biweekly'){
@@ -207,6 +207,7 @@ function renderActivity(){
 }
 $('activity-manager').addEventListener('change',renderActivity);
 function renderPickups(){
+ if(data.features?.top_10_pickups_enabled===false)return;
  const scout=data.transfer_watch||{};
  const selected=$('pickup-position').value;
  const pool=scout.candidates||scout.top10||[];
@@ -347,7 +348,7 @@ function updateStatus(){const synced=Boolean(data.updated_at);const fresh=synced
  $('sync-line').textContent=synced?`Latest successful live update: ${new Date(data.updated_at).toLocaleString()}. ${data.status||''}`:(data.status||'Retrieving live data…');
  if(!fresh&&synced)$('sync-line').classList.add('status-error');else $('sync-line').classList.remove('status-error');
 }
-function renderAll(){renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='pickups')renderPickups()}
+function renderAll(){const pickupOn=data.features?.top_10_pickups_enabled!==false;const pickupTab=document.querySelector('[data-view="pickups"]');if(pickupTab)pickupTab.hidden=!pickupOn;if(!pickupOn&&currentView==='pickups')tab('home');renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='pickups')renderPickups()}
 async function fetchData(){try{const res=await fetch('/api/status',{cache:'no-store'});if(!res.ok)throw Error(`HTTP ${res.status}`);data=await res.json();renderAll()}catch(err){$('small-status').textContent='Server unavailable';$('sync-line').textContent=`Server connection unavailable: ${err.message}. Open this page through python server.py or your Render URL.`;$('sync-line').classList.add('status-error')}}
 renderAll();fetchData();setInterval(fetchData,60*1000);
 </script>
