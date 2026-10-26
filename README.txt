@@ -24,3 +24,5 @@ The roster comparison detects net changes between Gameweek squads. If a player
 was added and dropped again between the snapshots, it will not appear. The Draft
 API may not provide earlier lineups when a GW is missing; no changes are invented
 for those intervals. Standings-based waiver priority is still an estimate.
+
+- Injury indicator updated to a small circular red medical cross icon instead of the hospital emoji.
