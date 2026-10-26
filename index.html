@@ -37,7 +37,7 @@
 <div class="panel"><div class="selector-row"><label for="manager-select">Manager</label><select id="manager-select"></select><label for="week-select">Gameweek</label><select id="week-select"></select></div><div id="lineup-content"><div class="empty">Waiting for team data…</div></div></div></section>
 <section class="view" id="archive"><div class="section-head"><div><div class="eyebrow">THE RECORD BOOK</div><h2>Gameweek archives</h2><p>Every two-week matchup: GW1–2, GW3–4, GW5–6, GW7–8, and beyond.</p></div></div><div id="archives" class="arch-grid"></div><div id="archive-detail" class="panel arch-detail" hidden></div></section>
 <section class="view" id="waivers"><div class="section-head"><div><div class="eyebrow">TRANSACTION CENTER</div><h2>Waiver-wire priority</h2><p>Order of priority for processing waiver claims.</p></div></div><div class="panel"><div id="waiver-ranks" class="rank-list"></div><p id="waiver-note" class="note-inline"></p></div><div class="panel soft"><div class="eyebrow">HOW IT WORKS</div><h2>Waiver rules</h2><p class="tiny">The Draft waiver queue can change after successful claims, so overall league rank alone does not reveal the current waiver priority. Touchline only displays a verified league-provided order or one configured by your commissioner.</p></div></section>
-</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · In-progress points and projected subs are not official final scores.</span></div></footer>
+</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
 <script>
 'use strict';
 const fallbackManagers=[{name:'Saul',team:'Saulitos',id:393832},{name:'Albert',team:'gospurs',id:365375},{name:'Eddy',team:"It's called soccer",id:372793},{name:'Daviel',team:'LIVERPOOL',id:372999},{name:'Jaden',team:'gooner',id:365166},{name:'Andrew',team:'Bleed Blue',id:372608}];
@@ -76,7 +76,7 @@ function renderHome(){
 function renderOverall(){const table=data.overall||[];
  $('overall-ranks').innerHTML=table.length?table.map((m,i)=>rankMarkup(m,i,'overall')).join(''):'<div class="empty">Loading season totals from the Draft API…</div>';
  bindOpen($('overall-ranks'));
- $('overall-note').textContent=table.some(m=>!m.complete)?'Season totals marked partial are the sum of Gameweeks successfully retrieved so far, not confirmed season totals. Older Gameweeks are fetched in the background.':'All Gameweek scores are available. Scores for a Gameweek in progress remain provisional.';
+ $('overall-note').textContent=table.some(m=>!m.complete)?'Season totals marked partial are the sum of Gameweeks successfully retrieved so far, not confirmed season totals. Older Gameweeks are fetched in the background.':'All Gameweek scores are available. Touchline totals use only the 11 players currently listed in starting positions, without bench substitution points.';
 }
 function renderArchives(){
  const rounds=Object.values(data.rounds||{}).sort((a,b)=>a.first-b.first);
@@ -88,7 +88,7 @@ function renderArchives(){
  if(selectedArchive)renderArchiveDetail();
 }
 function renderArchiveDetail(){const r=data.rounds?.[selectedArchive];const d=$('archive-detail');if(!r){d.hidden=true;return}d.hidden=false;
- d.innerHTML=`<div class="detail-top"><div><div class="eyebrow">ROUND RESULTS</div><h2>${esc(r.label)}</h2><p class="tiny">${r.finished&&r.has_both?(r.verified?'Verified final points':'Matches played · points may exclude automatic substitutions'):'Scores incomplete or awaiting final matches'}</p></div><button class="back" type="button" id="archive-close">Close ×</button></div><div class="rank-list">${r.standings.map((row,i)=>rankMarkup(row,i)).join('')}</div>`;
+ d.innerHTML=`<div class="detail-top"><div><div class="eyebrow">ROUND RESULTS</div><h2>${esc(r.label)}</h2><p class="tiny">${r.finished&&r.has_both?(r.verified?'Gameweek finished · XI-only scores':'Starting-XI totals · bench points excluded'):'Scores incomplete or awaiting final matches'}</p></div><button class="back" type="button" id="archive-close">Close ×</button></div><div class="rank-list">${r.standings.map((row,i)=>rankMarkup(row,i)).join('')}</div>`;
  d.querySelector('#archive-close').addEventListener('click',()=>{d.hidden=true;selectedArchive=null});bindOpen(d);d.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderWaivers(){const val=data.waivers||{};const order=val.order||[];
@@ -166,16 +166,16 @@ function renderLineup(){
  const source=data.score_sources?.[String(selectedGW)]?.[manager.name];
  const pts=data.scores?.[String(selectedGW)]?.[manager.name];
  const eventDone=data.week_status?.[String(selectedGW)]?.finished;
- const scoring=source==='official_entry_history'?'Official GW total available':source==='confirmed_substitutions'?'Confirmed substitutions applied':eventDone?'Starting-XI score · check official final total':'Provisional live XI points';
+ const scoring=eventDone?'Starting XI only · bench excluded':'Live starting XI only · bench excluded';
  $('lineup-content').innerHTML=`
- <div class="detail-top" style="margin-bottom:16px"><div><div class="eyebrow">${esc(manager.team)} · GW${selectedGW}</div><h2>${esc(manager.name)}'s lineup</h2><div class="data-tag">${esc(scoring)}</div></div><div style="text-align:right"><div class="eyebrow">SQUAD POINTS</div><div style="font-weight:950;font-size:36px;color:var(--lime)">${totalOrDash(pts)}</div></div></div>
+ <div class="detail-top" style="margin-bottom:16px"><div><div class="eyebrow">${esc(manager.team)} · GW${selectedGW}</div><h2>${esc(manager.name)}'s lineup</h2><div class="data-tag">${esc(scoring)}</div></div><div style="text-align:right"><div class="eyebrow">STARTING XI POINTS</div><div style="font-weight:950;font-size:36px;color:var(--lime)">${totalOrDash(pts)}</div></div></div>
  <div class="legend" style="margin-bottom:14px"><span class="legend-item"><i class="dot finished"></i>Played</span><span class="legend-item"><i class="dot live"></i>Live</span><span class="legend-item"><i class="dot upcoming"></i>Yet to play</span></div>
  <div class="pitch-label">STARTING XI · ${starters.filter(p=>p.position_type===2).length}-${starters.filter(p=>p.position_type===3).length}-${starters.filter(p=>p.position_type===4).length}</div>
  ${lineMarkup(starters,subs)}
  <div class="pitch-label" style="margin-top:20px">SUBSTITUTES · BENCH ORDER</div><div class="bench">${bench.map(p=>playerCard(p,subs)).join('')}</div>
  <div class="panel soft" style="margin-top:18px;margin-bottom:0"><div class="eyebrow">SUBSTITUTION TRACKER</div><h2>Automatic substitutions</h2>
  ${subs.length?`<div class="sub-list">${subs.map(s=>{const inP=roster.find(p=>p.id===s.in_id),outP=roster.find(p=>p.id===s.out_id);return `<div class="sub-row"><div><div class="out">↓ ${esc(outP?.name||'Unknown')}</div><div class="tiny">${outP?.points??'—'} pts · Out</div></div><div class="arrow">→</div><div><div class="in">↑ ${esc(inP?.name||'Unknown')}</div><div class="tiny">${inP?.points??'—'} pts · ${s.type==='confirmed'?'Confirmed':'Projected'}</div></div></div>`}).join('')}</div>`:'<div class="empty">No confirmed or confidently projected substitutions yet. As fixtures finish, potential replacements appear here.</div>'}
- <p class="bottomhint">Projected subs are estimates that respect bench order and minimum formation requirements. Only Draft-confirmed subs or official entry totals should be treated as final.</p>
+ <p class="bottomhint">Substitutions are displayed for reference only. Bench points are never added to Touchline team totals, even for confirmed substitutions.</p>
  </div><p class="note-inline"><a href="https://draft.premierleague.com/en/entry/${manager.id}/event/${selectedGW}" target="_blank" rel="noopener noreferrer">View this Gameweek on official Draft ↗</a></p>`;
 }
 $('manager-select').addEventListener('change',e=>{selectedManager=e.target.value;renderLineup()});

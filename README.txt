@@ -1,30 +1,12 @@
-TOUCHLINE 2.1 — SCORING CORRECTION FOR EXISTING RENDER SERVICE
+TOUCHLINE — STARTING XI ONLY SCORING FIX
 
-This ZIP contains the updated server.py along with your existing index.html
-and config.json. It does not create a new Render project.
+RULE: Total team points = sum of the points of the 11 players whose API pick positions are 1 through 11. Positions 12 through 15 are bench and contribute ZERO to Touchline team totals. No automatic-substitution adjustments and no entry_history score override are used.
 
-The fix:
-- Prevents auto-substitution points from being added twice if the incoming
-  player already appears in the starting XI returned by the Draft API.
-- Applies a confirmed substitution once if the API still returns the original XI.
-- Uses entry_history.points, when available, as the authoritative Gameweek score.
-- Clears previously cached scores produced by old scoring logic and retrieves
-  them again from the Draft API.
-- Retains the pitch, club-colored kits, archives, and leaderboards.
+Individual points, pitch, club uniforms, projected/confirmed substitution DISPLAY, season table, biweekly archives, and waiver section remain available. This is a custom fantasy scoring display and may differ from official FPL Draft totals after autosubs.
 
-HOW TO INSTALL:
-1. Go to https://github.com/thegoat-ops-throat/FPL-Fantasy-Live-Tracker
-2. Upload the three root files server.py, index.html, config.json, replacing
-   the same-named files in the repo root. (README.txt is optional.)
-3. Commit changes. Existing Render service should auto-deploy.
-4. Start command: python server.py
-5. Open YOUR existing Render URL + /api/status; check updated_at and status.
-6. Compare one completed Gameweek for each manager with official FPL Draft.
+Upload server.py, index.html and config.json into the ROOT of your EXISTING GitHub repository: https://github.com/thegoat-ops-throat/FPL-Fantasy-Live-Tracker . Commit the files and your existing Render service will auto-redeploy. No new Render project is needed.
 
-IMPORTANT:
-FPL Draft's API is unofficial and can change. We cannot guarantee historical
-scores or verified final totals where the API does not provide them. Some
-Gameweeks may remain calculated / provisional. Do not treat projected subs
-as final. Render free instances can sleep between requests.
+Render Build Command: echo "No dependencies needed"
+Render Start Command: python server.py
 
-Run local tests (optional): python -m unittest -v test_server.py
+The server bumps scoring_version to 3 and clears previously cached totals on startup. After deployment confirm /api/status displays scoring_version 3, and that scores match the 11 players shown on the pitch. Free Render plans may sleep.
