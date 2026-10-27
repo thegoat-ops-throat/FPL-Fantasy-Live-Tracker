@@ -4,8 +4,6 @@ Run: python server.py. On Render: Start Command = python server.py.
 No FPL account password or API key is needed for public Draft endpoints.
 """
 import json
-import hmac
-import base64
 from urllib.parse import urlsplit
 import os
 import threading
@@ -17,7 +15,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from projection_model import prediction
-from transfer_watch import generate_watch
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'scores.json'
@@ -54,7 +51,6 @@ def default_state():
         'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-and-past-seasons-weighted-v4',
         'historical_seasons': {}, 'historical_checked': {}, 'historical_fetch_status': 'Not checked',
         'projection_sources': ['FPL Draft'],
-        'transfer_watch': {'top10': [], 'candidates': [], 'manual_lineup_previews': [], 'availability_note': 'Awaiting Draft data'},
     }
 
 
@@ -622,10 +618,6 @@ def worker():
             # Current first: all six managers appear quickly after a Render cold start.
             refresh_one(current, bootstrap, events, player_db, clubs)
             with state_lock:
-                st=load()
-                st['transfer_watch']=generate_watch(bootstrap, st.get('players',{}).get(str(current),{}), current, clubs, ROOT/'manager_lineup_watch.json')
-                save(st)
-            with state_lock:
                 state = load()
                 state['updated_at'] = datetime.now(timezone.utc).isoformat()
                 state['status'] = 'Live Draft XI-only points loaded (bench excluded)'
@@ -665,89 +657,9 @@ def worker():
         time.sleep(REFRESH_SECONDS)
 
 
-# Admin toggle: private password protects changes; optional GitHub repository
-# persistence survives Render free-instance restarts and deployments.
-FEATURE_FILE = ROOT / 'feature_flags.json'
-feature_lock = threading.RLock()
-feature_override = None
-
-def feature_enabled():
-    with feature_lock:
-        if feature_override is not None:
-            return feature_override
-        try:
-            saved = json.loads(FEATURE_FILE.read_text(encoding='utf-8'))
-            return saved.get('top_10_pickups_enabled') is not False
-        except (OSError, ValueError, AttributeError):
-            return True
-
-def persist_feature_github(enabled):
-    token = os.environ.get('TOUCHLINE_GITHUB_TOKEN', '').strip()
-    repo = os.environ.get('TOUCHLINE_GITHUB_REPO', '').strip()
-    if not token or not repo:
-        return False
-    if not all(part.replace('-', '').replace('_','').isalnum() for part in repo.split('/')) or len(repo.split('/')) != 2:
-        raise ValueError('Invalid TOUCHLINE_GITHUB_REPO')
-    api = f'https://api.github.com/repos/{repo}/contents/feature_flags.json'
-    hdr = {'Authorization':f'Bearer {token}', 'Accept':'application/vnd.github+json',
-           'User-Agent':'Touchline-admin', 'X-GitHub-Api-Version':'2022-11-28'}
-    sha = None
-    try:
-        with urllib.request.urlopen(urllib.request.Request(api, headers=hdr),timeout=12) as res:
-            old = json.load(res)
-            sha = old.get('sha')
-    except urllib.error.HTTPError as exc:
-        if exc.code != 404: raise
-    content = base64.b64encode((json.dumps({'top_10_pickups_enabled': enabled}, indent=2)+'\n').encode()).decode()
-    value = {'message':f'Touchline: {"enable" if enabled else "disable"} Top 10 Picks',
-             'content':content, 'branch':os.environ.get('TOUCHLINE_GITHUB_BRANCH','main')}
-    if sha:value['sha']=sha
-    request=urllib.request.Request(api,data=json.dumps(value).encode(),headers={**hdr,'Content-Type':'application/json'},method='PUT')
-    with urllib.request.urlopen(request,timeout=18) as res:
-        json.load(res)
-    return True
-
-def apply_toggle(enabled):
-    global feature_override
-    with feature_lock:
-        # Commit to GitHub first when set up, so the value survives deployments.
-        durable = persist_feature_github(enabled)
-        if not durable:
-            tmp = FEATURE_FILE.with_suffix('.tmp')
-            tmp.write_text(json.dumps({'top_10_pickups_enabled': enabled}), encoding='utf-8')
-            tmp.replace(FEATURE_FILE)
-        feature_override = enabled
-        return durable
-
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
-
-    def do_POST(self):
-        path=self.path.split('?',1)[0]
-        if path not in ('/api/admin/feature', '/api/admin/status'):
-            self.send_error(404); return
-        secret=os.environ.get('TOUCHLINE_ADMIN_PASSWORD','')
-        if not secret:
-            self._json_reply(503, {'error':'Admin control is not configured. Add TOUCHLINE_ADMIN_PASSWORD in Render Environment.'});return
-        length=int(self.headers.get('Content-Length', '0') or 0)
-        if length<1 or length>1024:
-            self._json_reply(400, {'error':'Invalid request size'});return
-        try: data=json.loads(self.rfile.read(length))
-        except (ValueError,TypeError):
-            self._json_reply(400, {'error':'Invalid JSON'});return
-        password=data.get('password','') if isinstance(data,dict) else ''
-        if not isinstance(password,str) or not hmac.compare_digest(password,secret):
-            self._json_reply(403, {'error':'Incorrect admin password'});return
-        if path == '/api/admin/status':
-            self._json_reply(200, {'enabled':feature_enabled(), 'durable_configured':bool(os.environ.get('TOUCHLINE_GITHUB_TOKEN') and os.environ.get('TOUCHLINE_GITHUB_REPO'))});return
-        enabled=data.get('enabled')
-        if not isinstance(enabled,bool):
-            self._json_reply(400, {'error':'enabled must be true or false'});return
-        try: durable=apply_toggle(enabled)
-        except Exception as exc:
-            self._json_reply(502, {'error':'Cannot save the toggle: '+str(exc)[:140]});return
-        self._json_reply(200, {'enabled':enabled, 'durable':durable})
 
     def _json_reply(self,status,body):
         payload=json.dumps(body).encode('utf-8')
@@ -764,9 +676,7 @@ class Handler(SimpleHTTPRequestHandler):
         if path == '/api/status':
             with state_lock:
                 public = load()
-                public['features'] = {'top_10_pickups_enabled': feature_enabled()}
-                if not feature_enabled():
-                    public.pop('transfer_watch', None)
+                public.pop('transfer_watch', None)  # Legacy cached scouting data is not public.
                 payload = json.dumps(public, ensure_ascii=False).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
@@ -774,7 +684,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header('Cache-Control', 'no-store')
             self.end_headers()
             self.wfile.write(payload)
-        elif path in ('/feature_flags.json', '/scores.json', '/external_projection_inputs.json'):
+        elif path in ('/feature_flags.json', '/scores.json', '/external_projection_inputs.json', '/manager_lineup_watch.json', '/manager_lineup_watch_EXAMPLE.json'):
             self.send_error(404)
         elif path == '/':
             self.path = '/index.html'
