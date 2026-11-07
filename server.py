@@ -722,6 +722,13 @@ def worker():
 
 
 class Handler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        # Prevent HTML/JS from remaining stale after Render redeploys.
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+        super().end_headers()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
@@ -737,7 +744,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split('?', 1)[0]
-        if path == '/api/status':
+        if path == '/api/version':
+            self._json_reply(200, {'version':'3.9', 'trade_analyzer':'six-factor composite', 'build':'2026-11-07'})
+        elif path == '/api/status':
             with state_lock:
                 public = load()
                 public.pop('transfer_watch', None)  # Legacy cached scouting data is not public.

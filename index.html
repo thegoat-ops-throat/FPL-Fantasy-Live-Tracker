@@ -65,6 +65,11 @@
 /* Touchline 3.5 · Proposed Trade Analyzer */
 .trade-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.trade-side{background:#132b43;border:1px solid #36546e;border-radius:14px;padding:17px;min-width:0}.trade-side h3{margin:0 0 10px;font-size:18px}.trade-side select{width:100%;margin:8px 0 12px}.trade-roster{display:grid;gap:7px;max-height:450px;overflow:auto;padding-right:4px}.trade-player{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:10px;border-radius:10px;background:#1b354f;border:1px solid #36536e;color:#f4f8ff}.trade-player:hover{border-color:#94bd70}.trade-player.chosen{border-color:var(--lime);background:#2b483e}.trade-player:disabled{opacity:.48;cursor:not-allowed}.trade-player .tp-name{flex:1;min-width:0}.trade-player b{font-size:13px;display:block}.trade-player small{font-size:11px;color:var(--muted);display:block;margin-top:3px}.trade-player .tp-proj{font-weight:850;color:var(--lime);font-size:13px;white-space:nowrap}.trade-player .tp-check{width:17px;height:17px;border-radius:5px;border:1px solid #8295a8;display:grid;place-items:center;font-size:11px}.trade-player.chosen .tp-check{background:var(--lime);color:#09201a;border-color:var(--lime)}.trade-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}.trade-btn{padding:11px 17px;border-radius:10px;border:1px solid #8ebd6c;background:var(--lime);color:#132318;font-weight:850}.trade-btn.secondary{background:#213c55;color:#fff;border-color:#52718a}.trade-result{background:#11283d;border:1px solid #416078;border-radius:14px;padding:19px}.trade-result h3{font-size:23px;margin:6px 0 12px}.trade-score-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.trade-score{background:#203b53;border:1px solid #395770;border-radius:12px;padding:16px}.trade-score strong{display:block;font-size:14px}.trade-score .value{font-size:29px;font-weight:900;letter-spacing:-.05em;color:var(--lime);margin:7px 0}.trade-score small{color:var(--muted);font-size:12px}.trade-reasons{font-size:13px;line-height:1.65;color:#d6e4f0}.trade-warning{color:#ffd9a2}.trade-meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.trade-meta span{background:#28445c;padding:6px 9px;border-radius:7px;font-size:11px;color:#c7d7e5}.trade-empty{color:var(--muted);font-size:13px;padding:13px;border:1px dashed #52718a;border-radius:10px}.trade-side-header{display:flex;justify-content:space-between;align-items:center;gap:8px}.trade-side-header span{font-size:11px;color:var(--muted)}
 @media(max-width:750px){.trade-layout{grid-template-columns:1fr}.trade-roster{max-height:310px}}@media(max-width:480px){.trade-score-grid{grid-template-columns:1fr}}
+
+/* Touchline 3.7 · Balanced Trade Scout */
+.trade-score .value{font-variant-numeric:tabular-nums}.trade-score .value.negative{color:#ffb6a9}.trade-score .value.neutral{color:#f2e9aa}
+.trade-breakdown{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}.trade-breakdown th,.trade-breakdown td{padding:9px 7px;text-align:left;border-bottom:1px solid #35516a}.trade-breakdown th{color:#b4c9dc;font-weight:750}.trade-breakdown td:last-child,.trade-breakdown th:last-child{text-align:right}.trade-breakdown .pos{color:var(--lime)}.trade-breakdown .neg{color:#ffb6a9}.trade-breakdown .muted-cell{color:#a5bacb}.trade-method{margin:13px 0;border:1px solid #3b596f;background:#19364b;padding:12px;border-radius:10px;font-size:12px;line-height:1.6}.trade-method summary{cursor:pointer;font-weight:800}.trade-summary{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.trade-summary span{padding:7px 9px;border-radius:8px;background:#28445c;color:#e0ecf6;font-size:12px}.trade-player .tp-proj{min-width:76px;text-align:right}.trade-player .tp-proj small{color:#bdd1dd;font-size:10px}.trade-composite{color:var(--lime);font-weight:900}
+
 /* Full-pool Free Agent Scout */
 .fa-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:15px}
 .fa-field{display:flex;flex-direction:column;gap:5px;min-width:130px;flex:1}
@@ -84,6 +89,9 @@
 .fa-pagination button{padding:9px 14px;background:#203b53;border:1px solid #50718b;color:#fff;border-radius:9px}
 .fa-pagination button:disabled{opacity:.4;cursor:default}
 @media(max-width:600px){.fa-table th,.fa-table td{padding:9px 7px;font-size:11px}}
+
+/* Touchline 3.7 · composite trade breakdown */
+.trade-factor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.trade-factor-box{border:1px solid #3c6078;border-radius:12px;background:#19364d;padding:13px;min-width:0}.trade-factor-box>strong{font-size:13px;display:block;margin-bottom:9px}.trade-factor-player{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #34516a;font-size:13px}.trade-factor-player strong{color:var(--lime);white-space:nowrap}.trade-factor-player small{font-size:11px;color:#a6bac9}.trade-factor-total{margin-top:11px;font-weight:800;font-size:13px}.trade-factor-heading{margin:17px 0 8px;font-size:16px}.trade-factor-table{overflow-x:auto}.trade-factor-table table{width:100%;border-collapse:collapse;font-size:12px}.trade-factor-table th,.trade-factor-table td{padding:10px 9px;text-align:right;border-bottom:1px solid #34516a}.trade-factor-table th:first-child,.trade-factor-table td:first-child{text-align:left}.trade-factor-table small{color:#b5c5d4}.trade-factor-table th{color:#b9cfdf;font-size:11px}.trade-score .value{font-variant-numeric:tabular-nums}@media(max-width:600px){.trade-factor-grid{grid-template-columns:1fr}.trade-factor-table table{min-width:490px}}
 </style>
 </head>
 <body>
@@ -129,7 +137,7 @@
  </div>
 </section>
 <section class="view" id="trades">
- <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · TRADE LAB</div><h2>Trade Analyzer</h2><p>Compare proposed trades between any two league managers using their latest available 15-player squads.</p></div></div>
+ <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · TRADE LAB</div><h2>Trade Analyzer <span style="font-size:12px;display:inline-block;vertical-align:middle;letter-spacing:.04em;padding:5px 8px;background:#31536b;border-radius:7px;color:#d6f3a3">v3.9 · MULTI-FACTOR</span></h2><p>Compare trades using a combined player-value rating: form, season performance, playing time, availability, attacking involvement, matchup and projections—not just one Gameweek.</p></div></div>
  <div class="panel">
   <div class="trade-layout">
    <div class="trade-side"><div class="trade-side-header"><h3>Team A</h3><span id="trade-count-a">0 selected</span></div><label for="trade-manager-a" class="tiny">Manager offering players</label><select id="trade-manager-a" aria-label="First trade manager"></select><div class="trade-roster" id="trade-roster-a"></div></div>
@@ -137,10 +145,10 @@
   </div>
   <div class="trade-actions"><button type="button" class="trade-btn" id="trade-analyze">Analyze proposed trade</button><button type="button" class="trade-btn secondary" id="trade-clear">Clear selections</button><span class="tiny" id="trade-source">Waiting for squad data…</span></div>
   <div id="trade-output" class="trade-result" aria-live="polite"><div class="trade-empty">Choose one or more players on each side, then analyze the trade. Select up to three per team.</div></div>
-  <p class="note-inline">This is a scouting comparison, not a trade submission or guarantee. Current-Gameweek projections reflect one matchup, not a multi-week forecast. Data confidence measures evidence completeness, not the probability of a result. No changes are made to either squad.</p>
+  <p class="note-inline">The composite rating is a transparent heuristic (0–100), not a prediction of season points. It blends current evidence and includes a small next-matchup component. Player availability is uncertain, and future fixture runs, playing-time changes and trade acceptance cannot be predicted from the available data. No trade is submitted.</p>
  </div>
 </section>
-</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
+</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE v3.9 · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
 <script>
 'use strict';
 const fallbackManagers=[{name:'Saul',team:'Saulitos',id:393832},{name:'Albert',team:'gospurs',id:365375},{name:'Eddy',team:"It's called soccer",id:372793},{name:'Daviel',team:'LIVERPOOL',id:372999},{name:'Jaden',team:'gooner',id:365166},{name:'Andrew',team:'Bleed Blue',id:372608}];
@@ -153,7 +161,7 @@ let currentView='home',selectedManager='Saul',selectedGW=null,selectedArchive=nu
 const names=()=>data.managers||fallbackManagers;
 const totalOrDash=n=>typeof n==='number'?n.toLocaleString():'—';
 function currentRound(){const gw=Math.max(1,Number(data.gameweek)||8);const first=gw%2===0?gw-1:gw;return data.rounds?.[`GW${first}–GW${first+1}`]||null}
-function tab(view){currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();window.scrollTo({top:0,behavior:'smooth'})}
+function tab(view){currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();if(view==='freeagents')renderFreeAgents();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>tab(btn.dataset.view)));
 // Initialize trade selectors on demand, including after live data refreshes.
 document.querySelector('[data-view="trades"]').addEventListener('click',()=>renderTrades());
@@ -378,9 +386,18 @@ function updateStatus(){const synced=Boolean(data.updated_at);const fresh=synced
  if(!fresh&&synced)$('sync-line').classList.add('status-error');else $('sync-line').classList.remove('status-error');
 }
 
-// Proposed trade simulator. Only existing league rosters are eligible; no private trade or waiver data is claimed.
+// Proposed trade simulator. A balanced scouting index, not a points-only comparison.
 const tradeState={a:null,b:null,selectedA:new Set(),selectedB:new Set(),lastKey:''};
 const tradePos={1:'GK',2:'DEF',3:'MID',4:'FWD'};
+const tradeFactors=[
+ {key:'projected',label:'Next GW projection',weight:15},
+ {key:'recent',label:'Recent form',weight:20},
+ {key:'season',label:'Season points / match',weight:25},
+ {key:'minutes',label:'Playing time',weight:15},
+ {key:'involvement',label:'Expected goals + assists / 90',weight:10},
+ {key:'matchup',label:'Next opponent',weight:5},
+ {key:'availability',label:'Availability',weight:10}
+];
 function tradeRosterFor(manager){
  const weeks=Object.keys(data.players||{}).map(Number).filter(Number.isInteger).sort((a,b)=>b-a);
  for(const gw of weeks){const entry=data.players?.[String(gw)]?.[manager];if(entry?.roster?.length===15)return {gw,entry}}
@@ -392,16 +409,74 @@ function tradeCommonWeek(a,b){
  return null;
 }
 function tradeProjection(entry,p){return (entry.projections||[]).find(x=>x.id===p.id)||null}
-function tradeNumeric(x){return typeof x==='number'&&Number.isFinite(x)?x:null}
+function tradeNumeric(x){if(x===null||x===undefined||x==='')return null;const v=Number(x);return Number.isFinite(v)?v:null}
 function tradeFmt(x){return x===null?'—':x.toFixed(1)}
+function tradePercentile(v,peers){
+ if(v===null)return null;
+ const valid=peers.filter(n=>n!==null&&Number.isFinite(n)).sort((a,b)=>a-b);
+ if(valid.length<2)return null;
+ const below=valid.filter(n=>n<v).length,equal=valid.filter(n=>n===v).length;
+ return 100*(below+equal/2)/valid.length;
+}
+function tradeAvailability(p,proj){
+ const chance=tradeNumeric(p.chance_next),factor=tradeNumeric(proj?.availability_factor);
+ const status=String(p.injury_status||'').toLowerCase();
+ // A current, explicit injury/suspension flag overrides a missing playing chance.
+ if(chance!==null)return Math.max(0,Math.min(100,chance));
+ if(['i','s','u','n'].includes(status))return 10;
+ if(status==='d')return 60;
+ if(status==='a')return 100;
+ if(factor!==null&&factor<1)return Math.max(0,Math.min(100,factor*100));
+ return null; // Unknown is not assumed fit.
+}
+function tradeRaw(p,proj,gw){
+ const minutes=tradeNumeric(p.auto_minutes),xg=tradeNumeric(p.auto_xg),xa=tradeNumeric(p.auto_xa);
+ const xp=(minutes!==null&&minutes>=90&&xg!==null&&xa!==null)?(xg+xa)*90/minutes:null;
+ const matchup=tradeNumeric(proj?.matchup_multiplier);
+ const avgMinutes=tradeNumeric(proj?.minutes_projection)??(minutes!==null&&gw>1?minutes/Math.max(1,gw-1):null);
+ return {projected:tradeNumeric(proj?.projected_points),recent:tradeNumeric(proj?.avg_recent)??tradeNumeric(p.auto_form),season:tradeNumeric(p.auto_points_per_game),minutes:avgMinutes===null?null:Math.max(0,Math.min(90,avgMinutes)),involvement:xp,matchup:matchup===null?null:matchup,availability:tradeAvailability(p,proj)};
+}
+function tradeContext(common){
+ const all=[...common.a.roster.map(p=>({p,proj:tradeProjection(common.a,p)})),...common.b.roster.map(p=>({p,proj:tradeProjection(common.b,p)}))];
+ // Use the whole tracked league, not just the two teams, as the position-matched comparison group.
+ for(const [name,team] of Object.entries(data.players?.[String(common.gw)]||{})){
+  if(name===tradeState.a||name===tradeState.b||!Array.isArray(team.roster))continue;
+  all.push(...team.roster.map(p=>({p,proj:tradeProjection(team,p)})));
+ }
+ const unique=[...new Map(all.map(x=>[x.p.id,x])).values()];
+ const peers={};for(const pos of [1,2,3,4])peers[pos]=unique.filter(x=>x.p.position_type===pos).map(x=>tradeRaw(x.p,x.proj,common.gw));
+ return {gw:common.gw,peers};
+}
+function tradeRate(p,proj,ctx){
+ const raw=tradeRaw(p,proj,ctx.gw),peer=ctx.peers[p.position_type]||[],factors={};
+ let sum=0,weights=0,covered=0;
+ for(const f of tradeFactors){
+  // xGI per 90 is not a meaningful valuation input for GKs/DEFs in this model.
+  if(f.key==='involvement'&&p.position_type<=2)continue;
+  const value=raw[f.key];let score=null;
+  if(f.key==='availability')score=value;
+  else if(f.key==='minutes')score=value===null?null:100*value/90;
+  else if(f.key==='matchup')score=value===null?null:Math.max(0,Math.min(100,(value-0.7)/0.6*100));
+  else score=tradePercentile(value,peer.map(x=>x[f.key]));
+  factors[f.key]={score,raw:value,weight:f.weight};
+  if(score!==null){sum+=score*f.weight;weights+=f.weight;covered+=f.weight}
+ }
+ const eligible=tradeFactors.filter(f=>f.key!=='involvement'||p.position_type>=3).reduce((a,f)=>a+f.weight,0);
+ const base=weights?sum/weights:null;
+ // Explicit non-availability must remain a large risk even if other categories are strong.
+ const availability=raw.availability;
+ const risk=availability!==null?0.35+0.65*(availability/100):1;
+ const value=base===null?null:Math.max(0,Math.min(100,base*risk));
+ return {value,raw,factors,coverage:eligible?Math.round(100*covered/eligible):0,risk};
+}
 function tradeSide(side){
- const manager=tradeState[side],selected=side==='a'?tradeState.selectedA:tradeState.selectedB;
+ const selected=side==='a'?tradeState.selectedA:tradeState.selectedB;
  const common=tradeCommonWeek(tradeState.a,tradeState.b),entry=common?.[side];
  const root=$('trade-roster-'+side);$('trade-count-'+side).textContent=selected.size+' selected';
  if(!entry){root.innerHTML='<div class="trade-empty">Waiting for both teams’ squads from the same Gameweek. The analyzer will load when data is available.</div>';return}
- const sorted=[...entry.roster].sort((x,y)=>(x.position_type-y.position_type)||x.name.localeCompare(y.name));
- root.innerHTML=sorted.map(p=>{const proj=tradeProjection(entry,p),pts=tradeNumeric(proj?.projected_points),checked=selected.has(p.id);
- return `<button type="button" class="trade-player ${checked?'chosen':''}" data-id="${p.id}" aria-pressed="${checked}" ${!checked&&selected.size>=3?'disabled':''}><span class="tp-check">${checked?'✓':''}</span><span class="tp-name"><b>${esc(p.name)}</b><small>${esc(tradePos[p.position_type]||'?')} · ${esc(p.club)} · ${esc(p.opponent||'fixture unavailable')}${p.injury_news?' · ⚕ availability note':''}</small></span><span class="tp-proj">${pts===null?'N/A':tradeFmt(pts)+' pts'}</span></button>`}).join('');
+ const ctx=tradeContext(common),sorted=[...entry.roster].sort((x,y)=>(x.position_type-y.position_type)||x.name.localeCompare(y.name));
+ root.innerHTML=sorted.map(p=>{const proj=tradeProjection(entry,p),rate=tradeRate(p,proj,ctx),checked=selected.has(p.id);
+ return `<button type="button" class="trade-player ${checked?'chosen':''}" data-id="${p.id}" aria-pressed="${checked}" ${!checked&&selected.size>=3?'disabled':''}><span class="tp-check">${checked?'✓':''}</span><span class="tp-name"><b>${esc(p.name)}</b><small>${esc(tradePos[p.position_type]||'?')} · ${esc(p.club)} · ${esc(p.opponent||'fixture unavailable')}${p.injury_news?' · ⚕ availability note':''}</small></span><span class="tp-proj">${rate.value===null?'N/A':tradeFmt(rate.value)+'/100'}<small>overall value</small></span></button>`}).join('');
  root.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>{const id=Number(btn.dataset.id);if(selected.has(id))selected.delete(id);else if(selected.size<3)selected.add(id);tradeSide(side);$('trade-output').innerHTML='<div class="trade-empty">Selection updated. Analyze to calculate the new comparison.</div>'}));
 }
 function renderTrades(){
@@ -411,9 +486,78 @@ function renderTrades(){
  for(const side of ['a','b']){const el=$('trade-manager-'+side);const manager=tradeState[side];el.innerHTML=mgrs.map(m=>`<option value="${esc(m.name)}" ${m.name===manager?'selected':''} ${m.name===tradeState[side==='a'?'b':'a']?'disabled':''}>${esc(m.name)} · ${esc(m.team)}</option>`).join('')}
  const common=tradeCommonWeek(tradeState.a,tradeState.b);
  const key=common?`${tradeState.a}|${tradeState.b}|${common.gw}`:'none';
- if(tradeState.lastKey!==key){tradeState.selectedA.clear();tradeState.selectedB.clear();tradeState.lastKey=key;$('trade-output').innerHTML='<div class="trade-empty">Select players from each team to compare a proposed trade.</div>'}
+ if(tradeState.lastKey!==key){tradeState.selectedA.clear();tradeState.selectedB.clear();tradeState.lastKey=key;$('trade-output').innerHTML='<div class="trade-empty">Select players from each team to compare their combined scouting value.</div>'}
  if(common){const validA=new Set(common.a.roster.map(p=>p.id)),validB=new Set(common.b.roster.map(p=>p.id));for(const id of tradeState.selectedA)if(!validA.has(id))tradeState.selectedA.delete(id);for(const id of tradeState.selectedB)if(!validB.has(id))tradeState.selectedB.delete(id)}
- tradeSide('a');tradeSide('b');$('trade-source').textContent=common?`Both rosters: GW${common.gw} · latest shared squad snapshot`:'No matching 15-player Gameweek squads loaded yet';
+ tradeSide('a');tradeSide('b');$('trade-source').textContent=common?`Both rosters: GW${common.gw} · balanced player-value model`:'No matching 15-player Gameweek squads loaded yet';
+}
+// Trade Scout 3.7: multi-factor player values, not single-GW projected points.
+// Peer comparisons are position-specific and use the synced league roster + player pool.
+const tradeWeights={season:25,form:20,fixture:20,minutes:15,availability:15,attack:5};
+const tradeLabels={season:'Season points/game',form:'Recent form',fixture:'Next-match outlook',minutes:'Playing-time reliability',availability:'Availability',attack:'Expected goal involvement'};
+function tradeNumber(x){if(x===null||x===undefined||x==='')return null;const n=Number(x);return Number.isFinite(n)?n:null}
+function tradePeerPool(common){
+ const peers=new Map();
+ for(const entry of Object.values(data.players?.[String(common.gw)]||{}))for(const p of entry?.roster||[])if(p?.id)peers.set(p.id,p);
+ const pool=data.free_agents||{};
+ if(pool.complete&&Number(pool.gameweek)===common.gw)for(const p of pool.players||[])if(p?.id&&!peers.has(p.id))peers.set(p.id,p);
+ return [...peers.values()];
+}
+function tradeMetric(p,key,gw){
+ const mins=tradeNumber(p.auto_minutes);
+ if(key==='season')return tradeNumber(p.auto_points_per_game);
+ if(key==='form')return tradeNumber(p.auto_form);
+ if(key==='fixture')return tradeNumber(p._tradeProjected);
+ if(key==='minutes')return mins===null?null:Math.min(100,Math.max(0,mins/(Math.max(1,gw-1)*85)*100));
+ if(key==='attack'){
+  if(![3,4].includes(p.position_type)||mins===null||mins<180)return null;
+  const xg=tradeNumber(p.auto_xg),xa=tradeNumber(p.auto_xa);
+  return xg===null&&xa===null?null:Math.max(0,(Math.max(0,xg||0)+Math.max(0,xa||0))*90/mins);
+ }
+ if(key==='availability'){
+  const status=(p.injury_status||'a').toLowerCase(),chance=tradeNumber(p.chance_next);
+  if(status==='historical')return null;
+  if(chance!==null)return Math.max(0,Math.min(100,chance));
+  if(status==='a')return p.injury_news?85:100;
+  if(status==='d')return 55;
+  if(['i','s','u'].includes(status))return 5;
+  return 50;
+ }
+ return null;
+}
+function tradePercentile(value,values){
+ if(value===null||values.length<5)return null;
+ const sorted=values.filter(v=>v!==null).sort((a,b)=>a-b);
+ if(sorted.length<5)return null;
+ if(sorted[0]===sorted[sorted.length-1])return 50;
+ const lower=sorted.filter(v=>v<value).length,equal=sorted.filter(v=>v===value).length;
+ return Math.max(0,Math.min(100,100*(lower+equal/2)/sorted.length));
+}
+function tradeValuesFor(common){
+ const peerPool=tradePeerPool(common);
+ const allProj=new Map();
+ for(const entry of Object.values(data.players?.[String(common.gw)]||{}))for(const proj of entry?.projections||[])allProj.set(proj.id,proj);
+ for(const p of data.free_agents?.players||[])if(data.free_agents?.complete&&Number(data.free_agents.gameweek)===common.gw&&p?.id&&!allProj.has(p.id))allProj.set(p.id,{projected_points:p.projected_points});
+ const decorated=peerPool.map(p=>({...p,_tradeProjected:tradeNumber(allProj.get(p.id)?.projected_points)}));
+ const peers={};
+ for(const pos of [1,2,3,4])for(const key of Object.keys(tradeWeights)){
+  peers[pos+'_'+key]=decorated.filter(p=>p.position_type===pos).map(p=>tradeMetric(p,key,common.gw)).filter(v=>v!==null);
+ }
+ function evaluate(p){
+  const entry=decorated.find(x=>x.id===p.id)||{...p,_tradeProjected:tradeNumber(allProj.get(p.id)?.projected_points)};
+  const detail={},weights={};let sum=0,available=0;
+  for(const [key,weight] of Object.entries(tradeWeights)){
+   if(key==='attack'&&![3,4].includes(p.position_type))continue;
+   const raw=tradeMetric(entry,key,common.gw);
+   const normalized=key==='availability'||key==='minutes'?raw:tradePercentile(raw,peers[p.position_type+'_'+key]||[]);
+   detail[key]={raw,normalized};
+   weights[key]=weight;
+   if(normalized!==null){sum+=normalized*weight;available+=weight}
+  }
+  const possible=Object.values(weights).reduce((a,b)=>a+b,0);
+  const coverage=possible?available/possible:0;
+  return {p,score:available?sum/available:null,coverage,detail,weights};
+ }
+ return evaluate;
 }
 function analyzeTrade(){
  const out=$('trade-output'),common=tradeCommonWeek(tradeState.a,tradeState.b);
@@ -421,30 +565,37 @@ function analyzeTrade(){
  const a=common.a.roster.filter(p=>tradeState.selectedA.has(p.id)),b=common.b.roster.filter(p=>tradeState.selectedB.has(p.id));
  if(!a.length||a.length!==b.length){out.innerHTML='<div class="trade-empty trade-warning">Select the same number of players on each side (1 to 3).</div>';return}
  const counts=players=>[1,2,3,4].map(pos=>players.filter(p=>p.position_type===pos).length);
- if(JSON.stringify(counts(a))!==JSON.stringify(counts(b))){out.innerHTML='<div class="trade-empty trade-warning">Invalid squad balance: each side must exchange the same number of goalkeepers, defenders, midfielders and forwards. Change your selections.</div>';return}
- const evaluate=(players,entry)=>{
-  const scored=players.map(p=>({p,proj:tradeProjection(entry,p)}));
-  const missing=scored.filter(x=>tradeNumeric(x.proj?.projected_points)===null);
-  const sum=key=>{const values=scored.map(x=>tradeNumeric(x.proj?.[key]));return values.every(v=>v!==null)?values.reduce((a,b)=>a+b,0):null};
-  const confidence=scored.map(x=>tradeNumeric(x.proj?.confidence_percent));
-  return {scored,missing,projected:sum('projected_points'),recent:sum('avg_recent'),confidence:confidence.every(v=>v!==null)?confidence.reduce((a,b)=>a+b,0)/confidence.length:null};
+ if(JSON.stringify(counts(a))!==JSON.stringify(counts(b))){out.innerHTML='<div class="trade-empty trade-warning">Invalid squad balance: each side must exchange the same number of goalkeepers, defenders, midfielders and forwards.</div>';return}
+ const value=tradeValuesFor(common),giveA=a.map(value),giveB=b.map(value),all=[...giveA,...giveB];
+ const sum=xs=>xs.every(x=>x.score!==null)?xs.reduce((n,x)=>n+x.score,0):null;
+ const totalA=sum(giveA),totalB=sum(giveB),swing=totalA===null||totalB===null?null:totalB-totalA;
+ const avgCoverage=all.reduce((n,x)=>n+x.coverage,0)/all.length;
+ const enough=avgCoverage>=.7&&all.every(x=>x.score!==null&&x.coverage>=.55);
+ const margin=swing===null?null:swing/a.length;
+ const verdict=!enough?'Insufficient data for a reliable trade verdict':Math.abs(margin)<4?'Balanced trade on overall player value':margin>0?`${tradeState.a} receives more overall value`:`${tradeState.b} receives more overall value`;
+ const signed=n=>n===null?'—':`${n>0?'+':''}${n.toFixed(1)}`;
+ const score=n=>n===null?'—':n.toFixed(1);
+ const playerNames=xs=>xs.map(p=>esc(p.name)).join(', ');
+ const rows=xs=>xs.map(x=>`<div class="trade-factor-player"><span>${esc(x.p.name)} <small>${esc(tradePos[x.p.position_type]||'')}</small></span><strong>${score(x.score)}<small> / 100</small></strong></div>`).join('');
+ const cats=Object.keys(tradeWeights).filter(k=>k!=='attack'||a.some(p=>[3,4].includes(p.position_type)));
+ const category=xs=>key=>{
+  const values=xs.map(x=>x.detail[key]?.normalized).filter(v=>v!==null);
+  return values.length?values.reduce((n,v)=>n+v,0)/values.length:null;
  };
- const giveA=evaluate(a,common.a),giveB=evaluate(b,common.b);
- const deltaA=giveA.projected===null||giveB.projected===null?null:giveB.projected-giveA.projected;
- const recentA=giveA.recent===null||giveB.recent===null?null:giveB.recent-giveA.recent;
- const verdict=deltaA===null?'Not enough projection data':Math.abs(deltaA)<0.75?'Near-even on this GW projection':deltaA>0?`${tradeState.a} gains more projected points`:`${tradeState.b} gains more projected points`;
- const playerNames=x=>x.map(p=>esc(p.name)).join(', ');
- const change=n=>n===null?'Not available':`${n>0?'+':''}${tradeFmt(n)} pts`;
- const warning=[...giveA.scored,...giveB.scored].filter(x=>x.p.injury_news||x.p.injury_status&& !['a','historical'].includes(x.p.injury_status));
- const missing=[...giveA.missing,...giveB.missing];
- out.innerHTML=`<div class="eyebrow">TRADE SCOUT · GW${common.gw} DATA</div><h3>${esc(verdict)}</h3><p class="tiny"><strong>${esc(tradeState.a)}</strong> sends ${playerNames(a)} and receives ${playerNames(b)}. <strong>${esc(tradeState.b)}</strong> sends ${playerNames(b)} and receives ${playerNames(a)}.</p>
- <div class="trade-score-grid"><div class="trade-score"><strong>${esc(tradeState.a)}</strong><div class="value">${change(deltaA)}</div><small>Net change in next-matchup projected points</small></div><div class="trade-score"><strong>${esc(tradeState.b)}</strong><div class="value">${deltaA===null?'Not available':change(-deltaA)}</div><small>Net change in next-matchup projected points</small></div></div>
- <div class="trade-meta"><span>${a.length}-for-${b.length} trade</span><span>Position counts valid</span><span>GW${common.gw} snapshot</span><span>Recent-form swing for ${esc(tradeState.a)}: ${change(recentA)}</span></div>
- <div class="trade-reasons"><p><strong>Projection breakdown:</strong> ${esc(tradeState.a)} gives ${tradeFmt(giveA.projected)} and gets ${tradeFmt(giveB.projected)} projected points; ${esc(tradeState.b)} gives ${tradeFmt(giveB.projected)} and gets ${tradeFmt(giveA.projected)}. These values cover the selected players, not a projected starting XI.</p>
- <p><strong>Data confidence:</strong> outgoing players for ${esc(tradeState.a)} ${giveA.confidence===null?'N/A':Math.round(giveA.confidence)+'%'}; outgoing players for ${esc(tradeState.b)} ${giveB.confidence===null?'N/A':Math.round(giveB.confidence)+'%'}. This measures data coverage, not trade success probability.</p>
- ${warning.length?`<p class="trade-warning"><strong>Availability cautions:</strong> ${warning.map(x=>`${esc(x.p.name)}${x.p.injury_news?' — '+esc(x.p.injury_news):' — flagged by Draft'}`).join('; ')}. Verify latest team news before agreeing.</p>`:''}
- ${missing.length?`<p class="trade-warning"><strong>Incomplete estimates:</strong> ${missing.map(x=>esc(x.p.name)).join(', ')} ${missing.length===1?'has':'have'} no numeric projection; the analyzer will not invent a trade advantage.</p>`:''}
- <p><strong>Limitations:</strong> A single-Gameweek projection is not a season-long player value or a measure of whether another manager will accept. Squad formation, bench strength, future fixtures and manager preferences can change the real value. No transaction has been sent.</p></div>`;
+ const catA=category(giveA),catB=category(giveB);
+ const table=cats.map(key=>{const va=catA(key),vb=catB(key);return `<tr><td>${esc(tradeLabels[key])} <small>(${tradeWeights[key]}% base)</small></td><td>${score(va)}</td><td>${score(vb)}</td><td>${va===null||vb===null?'—':signed(vb-va)}</td></tr>`}).join('');
+ const warnings=all.filter(x=>x.p.injury_news||!['a','historical'].includes(x.p.injury_status||'a'));
+ out.innerHTML=`<div class="eyebrow">TRADE SCOUT · v3.9 · SIX-FACTOR VALUE · GW${common.gw}</div>
+ <h3>${esc(verdict)}</h3><p class="tiny"><strong>${esc(tradeState.a)}</strong> sends ${playerNames(a)} and receives ${playerNames(b)}. <strong>${esc(tradeState.b)}</strong> sends ${playerNames(b)} and receives ${playerNames(a)}.</p>
+ <div class="trade-score-grid"><div class="trade-score"><strong>${esc(tradeState.a)}</strong><div class="value">${enough?signed(swing):'—'}</div><small>Net composite value gained · 0–100 per player, not GW points</small></div><div class="trade-score"><strong>${esc(tradeState.b)}</strong><div class="value">${enough?signed(-swing):'—'}</div><small>Net composite value gained · 0–100 per player, not GW points</small></div></div>
+ <div class="trade-meta"><span>${a.length}-for-${b.length} trade</span><span>Position counts valid</span><span>GW${common.gw} snapshot</span><span>Metric coverage: ${Math.round(avgCoverage*100)}%</span><span>${tradePeerPool(common).length} players in peer pool</span></div>
+ <div class="trade-factor-grid"><div class="trade-factor-box"><strong>${esc(tradeState.a)} gives</strong>${rows(giveA)}<div class="trade-factor-total">Total value: ${score(totalA)}</div></div><div class="trade-factor-box"><strong>${esc(tradeState.b)} gives</strong>${rows(giveB)}<div class="trade-factor-total">Total value: ${score(totalB)}</div></div></div>
+ <h4 class="trade-factor-heading">All categories combined</h4><div class="trade-factor-table"><table><thead><tr><th>Category</th><th>${esc(tradeState.a)} gives</th><th>${esc(tradeState.b)} gives</th><th>${esc(tradeState.a)} gains</th></tr></thead><tbody>${table}</tbody></table></div>
+ <div class="trade-reasons"><p><strong>How it works:</strong> Each player is scored against players in the same position. The composite combines season production (25%), recent form (20%), next-match outlook (20%), playing-time reliability (15%), availability (15%) and attacking expected involvement (5%, midfielders/forwards only). Weights are redistributed for missing or inapplicable categories. A trade's result compares the total player values received versus sent—not only projected points.</p>
+ <p><strong>Fixture and historical context:</strong> Opponent strength, previous seasons and verified external inputs are already reflected where available in the next-match projection. They are not counted again as separate categories. This is an overall scouting score, not a validated rest-of-season prediction.</p>
+ ${warnings.length?`<p class="trade-warning"><strong>Availability notes:</strong> ${warnings.map(x=>`${esc(x.p.name)}${x.p.injury_news?' — '+esc(x.p.injury_news):' — flagged by Draft'}`).join('; ')}. Verify the latest news.</p>`:''}
+ ${!enough?'<p class="trade-warning"><strong>Limited evidence:</strong> One or more selected players lack sufficient comparable statistics. Scores are shown for context, but no winner is declared.</p>':''}
+ <p><strong>Important:</strong> Category scores are relative position-based comparisons, not probabilities. Future fixtures beyond the next match, transfer preferences and starting-XI fit can change a trade's actual usefulness. No trade is submitted.</p></div>`;
 }
 $('trade-manager-a').addEventListener('change',e=>{tradeState.a=e.target.value;tradeState.selectedA.clear();tradeState.selectedB.clear();renderTrades()});
 $('trade-manager-b').addEventListener('change',e=>{tradeState.b=e.target.value;tradeState.selectedA.clear();tradeState.selectedB.clear();renderTrades()});
