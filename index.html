@@ -65,6 +65,25 @@
 /* Touchline 3.5 · Proposed Trade Analyzer */
 .trade-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.trade-side{background:#132b43;border:1px solid #36546e;border-radius:14px;padding:17px;min-width:0}.trade-side h3{margin:0 0 10px;font-size:18px}.trade-side select{width:100%;margin:8px 0 12px}.trade-roster{display:grid;gap:7px;max-height:450px;overflow:auto;padding-right:4px}.trade-player{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:10px;border-radius:10px;background:#1b354f;border:1px solid #36536e;color:#f4f8ff}.trade-player:hover{border-color:#94bd70}.trade-player.chosen{border-color:var(--lime);background:#2b483e}.trade-player:disabled{opacity:.48;cursor:not-allowed}.trade-player .tp-name{flex:1;min-width:0}.trade-player b{font-size:13px;display:block}.trade-player small{font-size:11px;color:var(--muted);display:block;margin-top:3px}.trade-player .tp-proj{font-weight:850;color:var(--lime);font-size:13px;white-space:nowrap}.trade-player .tp-check{width:17px;height:17px;border-radius:5px;border:1px solid #8295a8;display:grid;place-items:center;font-size:11px}.trade-player.chosen .tp-check{background:var(--lime);color:#09201a;border-color:var(--lime)}.trade-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}.trade-btn{padding:11px 17px;border-radius:10px;border:1px solid #8ebd6c;background:var(--lime);color:#132318;font-weight:850}.trade-btn.secondary{background:#213c55;color:#fff;border-color:#52718a}.trade-result{background:#11283d;border:1px solid #416078;border-radius:14px;padding:19px}.trade-result h3{font-size:23px;margin:6px 0 12px}.trade-score-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.trade-score{background:#203b53;border:1px solid #395770;border-radius:12px;padding:16px}.trade-score strong{display:block;font-size:14px}.trade-score .value{font-size:29px;font-weight:900;letter-spacing:-.05em;color:var(--lime);margin:7px 0}.trade-score small{color:var(--muted);font-size:12px}.trade-reasons{font-size:13px;line-height:1.65;color:#d6e4f0}.trade-warning{color:#ffd9a2}.trade-meta{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.trade-meta span{background:#28445c;padding:6px 9px;border-radius:7px;font-size:11px;color:#c7d7e5}.trade-empty{color:var(--muted);font-size:13px;padding:13px;border:1px dashed #52718a;border-radius:10px}.trade-side-header{display:flex;justify-content:space-between;align-items:center;gap:8px}.trade-side-header span{font-size:11px;color:var(--muted)}
 @media(max-width:750px){.trade-layout{grid-template-columns:1fr}.trade-roster{max-height:310px}}@media(max-width:480px){.trade-score-grid{grid-template-columns:1fr}}
+/* Full-pool Free Agent Scout */
+.fa-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:15px}
+.fa-field{display:flex;flex-direction:column;gap:5px;min-width:130px;flex:1}
+.fa-field label{color:var(--muted);font-size:11px;font-weight:700}
+.fa-field input,.fa-field select{width:100%;background:#203a54;border:1px solid #47627c;border-radius:10px;padding:10px 12px;color:#fff;font-size:13px}
+.fa-field.search{flex:2;min-width:200px}
+.fa-summary{font-size:12px;color:var(--muted);margin:0 0 12px}
+.fa-table-wrap{overflow-x:auto;border:1px solid #35536c;border-radius:12px}
+.fa-table{width:100%;border-collapse:collapse;font-size:12px;text-align:left;white-space:nowrap}
+.fa-table th{position:sticky;top:0;background:#203b53;color:#c8d9ea;padding:12px 10px;font-size:11px}
+.fa-table td{padding:11px 10px;border-top:1px solid #2d4861}
+.fa-table tbody tr:hover{background:#243e55}
+.fa-table .fa-name{font-weight:850;color:#fff}
+.fa-table .fa-points{font-weight:900;color:var(--lime)}
+.fa-flag{color:#ffd39b}
+.fa-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:15px}
+.fa-pagination button{padding:9px 14px;background:#203b53;border:1px solid #50718b;color:#fff;border-radius:9px}
+.fa-pagination button:disabled{opacity:.4;cursor:default}
+@media(max-width:600px){.fa-table th,.fa-table td{padding:9px 7px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -79,6 +98,7 @@
 <button type="button" class="navtab" data-view="waivers">🔄 Waiver order</button>
 <button type="button" class="navtab" data-view="activity">🔁 Transfers</button>
 <button type="button" class="navtab" data-view="trades">⚖️ Trade Analyzer</button>
+<button type="button" class="navtab" data-view="freeagents">🔎 Free Agents</button>
 </nav>
 <section class="view active" id="home">
 <div class="section-head"><div><div class="eyebrow">BIWEEKLY CHAMPIONSHIP</div><h2 id="current-title">Current round</h2><p>Each round contains two Gameweeks; standings start from zero for the next round.</p></div><span id="round-badge" class="chip current">LIVE ROUND</span></div>
@@ -93,6 +113,21 @@
 <section class="view" id="waivers"><div class="section-head"><div><div class="eyebrow">TRANSACTION CENTER</div><h2>Waiver-wire priority</h2><p>Estimated priority tracks reverse season standings as scores change, when full data is available.</p></div></div><div class="panel"><div id="waiver-ranks" class="rank-list"></div><p id="waiver-note" class="note-inline"></p></div><div class="panel soft"><div class="eyebrow">HOW IT WORKS</div><h2>Waiver rules</h2><p class="tiny">The Draft waiver queue can change after successful claims, so overall league rank alone does not reveal the current waiver priority. The estimated standings-based order updates automatically when all Gameweek scores are loaded. It is not the official claim-processing order; use official league priority to determine actual waivers.</p></div></section>
 <section class="view" id="activity"><div class="section-head"><div><div class="eyebrow">LEAGUE ACTIVITY</div><h2>Confirmed squad changes</h2><p>Only players actually added to or removed from a manager’s squad between two recorded Gameweeks appear here. Unsuccessful waiver requests are excluded.</p></div></div><div class="panel"><div class="activity-picker"><label class="tiny" for="activity-manager">Filter manager</label><select id="activity-manager"><option value="all">All managers</option><option value="DR">Daviel · DR</option><option value="EC">Eddy · EC</option><option value="AG">Albert · AG</option><option value="AA">Andrew · AA</option><option value="SG">Saul · SG</option><option value="JA">Jaden · JA</option></select></div><div id="activity-summary" class="activity-summary"></div><div id="activity-items" class="activity-grid"></div><p class="note-inline">Changes are confirmed from successive Draft Gameweek rosters after the later deadline has passed. The exact transaction mechanism (waiver, free-agent signing, or trade) is not assumed; individual add/drop pairings are shown only where unambiguous.</p></div></section>
 
+<section class="view" id="freeagents">
+ <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · PLAYER POOL</div><h2>Free Agent Rankings</h2><p>Search and rank every player not currently on the six tracked Draft squads—not just the top 10.</p></div></div>
+ <div class="panel">
+  <div class="fa-toolbar">
+   <div class="fa-field search"><label for="fa-search">Find player or club</label><input id="fa-search" type="search" placeholder="Search all available players…" autocomplete="off"></div>
+   <div class="fa-field"><label for="fa-position">Position</label><select id="fa-position"><option value="all">All positions</option><option value="1">Goalkeepers</option><option value="2">Defenders</option><option value="3">Midfielders</option><option value="4">Forwards</option></select></div>
+   <div class="fa-field"><label for="fa-sort">Rank by</label><select id="fa-sort"><option value="projected">Next GW projection</option><option value="form">Recent form</option><option value="ppg">Season points / game</option><option value="name">Player name</option></select></div>
+   <div class="fa-field"><label for="fa-availability">Availability</label><select id="fa-availability"><option value="all">All statuses</option><option value="healthy">No Draft warning</option><option value="flagged">Flagged / doubtful</option></select></div>
+  </div>
+  <p class="fa-summary" id="fa-summary">Waiting for current player pool…</p>
+  <div class="fa-table-wrap"><table class="fa-table"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Club</th><th>Next fixture</th><th>Proj.</th><th>Form</th><th>PPG</th><th>Status</th></tr></thead><tbody id="fa-rows"><tr><td colspan="9">Waiting for Draft data…</td></tr></tbody></table></div>
+  <div class="fa-pagination"><span class="tiny" id="fa-page-label"></span><div class="segmented"><button type="button" id="fa-prev">Previous</button><button type="button" id="fa-next">Next</button></div></div>
+  <p class="note-inline" id="fa-source">Availability is inferred from the six tracked squads' current Gameweek snapshots, not an official live waiver/free-agent clearance. Verify in the Draft app before making a claim. Projections are estimates and may be missing for players without sufficient data.</p>
+ </div>
+</section>
 <section class="view" id="trades">
  <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · TRADE LAB</div><h2>Trade Analyzer</h2><p>Compare proposed trades between any two league managers using their latest available 15-player squads.</p></div></div>
  <div class="panel">
@@ -416,7 +451,33 @@ $('trade-manager-b').addEventListener('change',e=>{tradeState.b=e.target.value;t
 $('trade-analyze').addEventListener('click',analyzeTrade);
 $('trade-clear').addEventListener('click',()=>{tradeState.selectedA.clear();tradeState.selectedB.clear();tradeSide('a');tradeSide('b');$('trade-output').innerHTML='<div class="trade-empty">Selections cleared. Choose players to analyze another trade.</div>'});
 
-function renderAll(){renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='trades')renderTrades();}
+// Complete player-pool scout. Filters and pagination run locally against the synced Draft snapshot.
+const faState={page:0,perPage:40};
+const faPosition={1:'GK',2:'DEF',3:'MID',4:'FWD'};
+function faNumber(x){if(x===null||x===undefined||x==='')return null;const n=Number(x);return Number.isFinite(n)?n:null}
+function faFixed(x){const n=faNumber(x);return n===null?'—':n.toFixed(1)}
+function faFlagged(p){return !['a',''].includes(p.injury_status||'a')||Boolean(p.injury_news)}
+function renderFreeAgents(){
+ const snapshot=data.free_agents||{},root=$('fa-rows');
+ if(!snapshot.complete){root.innerHTML='<tr><td colspan="9">'+esc(snapshot.note||'Waiting for current Draft squads…')+'</td></tr>';$('fa-summary').textContent='No complete current-squad snapshot yet.';$('fa-page-label').textContent='';$('fa-prev').disabled=true;$('fa-next').disabled=true;return}
+ const all=snapshot.players||[];
+ const query=$('fa-search').value.trim().toLowerCase(),pos=$('fa-position').value,sort=$('fa-sort').value,availability=$('fa-availability').value;
+ const shown=all.filter(p=>(pos==='all'||String(p.position_type)===pos)&&(!query||`${p.name} ${p.club}`.toLowerCase().includes(query))&&(availability==='all'||(availability==='flagged'?faFlagged(p):!faFlagged(p))));
+ const numberFor=(p,key)=>faNumber(key==='projected'?p.projected_points:key==='form'?p.auto_form:p.auto_points_per_game);
+ shown.sort((a,b)=>{if(sort==='name')return a.name.localeCompare(b.name);const av=numberFor(a,sort),bv=numberFor(b,sort);return (av===null)-(bv===null)||(bv??-999)-(av??-999)||a.name.localeCompare(b.name)});
+ const pages=Math.max(1,Math.ceil(shown.length/faState.perPage));faState.page=Math.min(faState.page,pages-1);
+ const start=faState.page*faState.perPage;
+ root.innerHTML=shown.slice(start,start+faState.perPage).map((p,i)=>`<tr><td>${start+i+1}</td><td class="fa-name">${esc(p.name)}</td><td>${esc(faPosition[p.position_type]||'—')}</td><td>${esc(p.club)}</td><td>${esc(p.opponent||'TBD')}</td><td class="fa-points">${faFixed(p.projected_points)}</td><td>${faFixed(p.auto_form)}</td><td>${faFixed(p.auto_points_per_game)}</td><td class="${faFlagged(p)?'fa-flag':''}" title="${esc(p.injury_news||'')}">${faFlagged(p)?'⚕ '+esc(p.injury_status||'Flag'):'✓'}</td></tr>`).join('')||'<tr><td colspan="9">No players match these filters.</td></tr>';
+ $('fa-summary').textContent=`${shown.length.toLocaleString()} matching players · ${all.length.toLocaleString()} not on tracked squads · GW${snapshot.gameweek} snapshot · Sorted by ${$('fa-sort').selectedOptions[0].text.toLowerCase()}`;
+ $('fa-page-label').textContent=shown.length?`Showing ${start+1}–${Math.min(start+faState.perPage,shown.length)} of ${shown.length}`:'No results';
+ $('fa-prev').disabled=faState.page===0;$('fa-next').disabled=faState.page>=pages-1;
+ $('fa-source').textContent=snapshot.note||'Unrostered among tracked squads. Verify official availability before claiming.';
+}
+for(const id of ['fa-search','fa-position','fa-sort','fa-availability'])$(id).addEventListener(id==='fa-search'?'input':'change',()=>{faState.page=0;renderFreeAgents()});
+$('fa-prev').addEventListener('click',()=>{faState.page=Math.max(0,faState.page-1);renderFreeAgents()});
+$('fa-next').addEventListener('click',()=>{faState.page++;renderFreeAgents()});
+
+function renderAll(){renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='trades')renderTrades();if(currentView==='freeagents')renderFreeAgents();}
 async function fetchData(){try{const res=await fetch('/api/status',{cache:'no-store'});if(!res.ok)throw Error(`HTTP ${res.status}`);data=await res.json();renderAll()}catch(err){$('small-status').textContent='Server unavailable';$('sync-line').textContent=`Server connection unavailable: ${err.message}. Open this page through python server.py or your Render URL.`;$('sync-line').classList.add('status-error')}}
 renderAll();fetchData();setInterval(fetchData,60*1000);
 </script>

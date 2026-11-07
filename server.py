@@ -51,6 +51,7 @@ def default_state():
         'history_updated_at': None, 'history_errors': [], 'club_results': {}, 'projection_method': 'recent-and-past-seasons-weighted-v4',
         'historical_seasons': {}, 'historical_checked': {}, 'historical_fetch_status': 'Not checked',
         'projection_sources': ['FPL Draft'],
+        'free_agents': {'complete': False, 'players': [], 'note': 'Waiting for current league squads.'},
     }
 
 
@@ -600,6 +601,67 @@ def refresh_one(gw, bootstrap, events, player_db, clubs):
         save(state)
 
 
+
+
+def refresh_free_agents(current, player_db, clubs):
+    """All players absent from the six tracked current Draft squads.
+
+    No official league-wide free-agent status is asserted: a claim or transfer
+    made since the Gameweek snapshot may change real availability.
+    """
+    with state_lock:
+        state = load()
+        teams = state.get('players', {}).get(str(current), {})
+        if not all(isinstance(teams.get(m['name'], {}).get('roster'), list)
+                   and len(teams[m['name']]['roster']) == 15 for m in MANAGERS):
+            state['free_agents'] = {'gameweek': current, 'players': [], 'complete': False,
+                                    'note': 'Waiting for all six current Gameweek squads.'}
+            save(state)
+            return
+        owned = {safe_int(p.get('id')) for m in MANAGERS
+                 for p in teams[m['name']]['roster']}
+        fixture_rows = state.get('club_results', {}).get(str(current), [])
+        by_club = {}
+        for match in fixture_rows:
+            if not isinstance(match, dict):
+                continue
+            for club in (match.get('home'), match.get('away')):
+                if club:
+                    by_club.setdefault(club, []).append(match)
+        candidates = []
+        for pid, item in player_db.items():
+            if pid in owned or item['position_type'] not in (1, 2, 3, 4):
+                continue
+            fixture = fixture_display(item.get('club_id'), by_club, clubs)
+            candidates.append({
+                'id': pid, 'name': item['name'], 'club_id': item['club_id'],
+                'club': clubs.get(item['club_id'], {}).get('short', '—'),
+                'position_type': item['position_type'],
+                'injury_status': item['availability'], 'injury_news': item['injury_news'],
+                'chance_next': item['chance_next'],
+                'auto_form': item['auto_form'], 'auto_points_per_game': item['auto_points_per_game'],
+                'auto_minutes': item['auto_minutes'], **fixture,
+            })
+        estimates = {x['id']: x for x in prediction(state, current, candidates, external_projection_inputs())}
+        for player in candidates:
+            projected = estimates.get(player['id'], {})
+            player['projected_points'] = projected.get('projected_points')
+            player['confidence_percent'] = projected.get('confidence_percent')
+            player['sample_games'] = projected.get('sample_games')
+            player['matchup_adjustment_percent'] = projected.get('matchup_adjustment_percent')
+            player['avg_recent'] = projected.get('avg_recent')
+        candidates.sort(key=lambda x: (x['projected_points'] is None,
+                                        -(x['projected_points'] or 0), x['name'].casefold()))
+        state['free_agents'] = {
+            'gameweek': current, 'complete': True,
+            'updated_at': datetime.now(timezone.utc).isoformat(),
+            'tracked_squads': len(MANAGERS), 'owned_count': len(owned),
+            'players': candidates,
+            'note': 'Unrostered among six tracked squads at the current Gameweek snapshot. Not official real-time league availability; confirm claims in Draft before submitting.',
+        }
+        save(state)
+
+
 def worker():
     last_history = 0
     while True:
@@ -617,6 +679,7 @@ def worker():
                 save(state)
             # Current first: all six managers appear quickly after a Render cold start.
             refresh_one(current, bootstrap, events, player_db, clubs)
+            refresh_free_agents(current, player_db, clubs)
             with state_lock:
                 state = load()
                 state['updated_at'] = datetime.now(timezone.utc).isoformat()
@@ -647,6 +710,7 @@ def worker():
                         team['projections'] = prediction(state, current, team.get('roster',[]), external_projection_inputs())
                     save(state)
                 last_history = time.time()
+                refresh_free_agents(current, player_db, clubs)
             # Best-effort history: current scores remain available even if FPL history fails.
             fetch_past_seasons(player_db, current)
         except Exception as exc:
