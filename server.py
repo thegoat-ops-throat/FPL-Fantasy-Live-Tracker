@@ -611,11 +611,23 @@ def refresh_free_agents(current, player_db, clubs):
     """
     with state_lock:
         state = load()
+        def complete_squads(teams):
+            return all(isinstance(teams.get(m['name'], {}).get('roster'), list)
+                       and len(teams[m['name']]['roster']) == 15 for m in MANAGERS)
+        snapshot_gw = current
         teams = state.get('players', {}).get(str(current), {})
-        if not all(isinstance(teams.get(m['name'], {}).get('roster'), list)
-                   and len(teams[m['name']]['roster']) == 15 for m in MANAGERS):
+        if not complete_squads(teams):
+            # Use the newest *complete* snapshot as a clearly dated fallback;
+            # never infer availability from partial squads.
+            for old_gw in sorted((safe_int(k) for k in state.get('players', {})
+                                  if safe_int(k) <= current), reverse=True):
+                old_teams = state['players'].get(str(old_gw), {})
+                if complete_squads(old_teams):
+                    teams, snapshot_gw = old_teams, old_gw
+                    break
+        if not complete_squads(teams):
             state['free_agents'] = {'gameweek': current, 'players': [], 'complete': False,
-                                    'note': 'Waiting for all six current Gameweek squads.'}
+                                    'note': 'No full six-manager squad snapshot yet. Check /api/diagnostics for details.'}
             save(state)
             return
         owned = {safe_int(p.get('id')) for m in MANAGERS
@@ -653,11 +665,11 @@ def refresh_free_agents(current, player_db, clubs):
         candidates.sort(key=lambda x: (x['projected_points'] is None,
                                         -(x['projected_points'] or 0), x['name'].casefold()))
         state['free_agents'] = {
-            'gameweek': current, 'complete': True,
+            'gameweek': snapshot_gw, 'complete': True,
             'updated_at': datetime.now(timezone.utc).isoformat(),
             'tracked_squads': len(MANAGERS), 'owned_count': len(owned),
             'players': candidates,
-            'note': 'Unrostered among six tracked squads at the current Gameweek snapshot. Not official real-time league availability; confirm claims in Draft before submitting.',
+            'note': (f'Based on GW{snapshot_gw} complete squad snapshot (current is GW{current}); potentially outdated. ' if snapshot_gw != current else 'Based on the current Gameweek squad snapshot. ') + 'Not official live availability; verify before claiming.',
         }
         save(state)
 
@@ -745,7 +757,26 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split('?', 1)[0]
         if path == '/api/version':
-            self._json_reply(200, {'version':'3.9', 'trade_analyzer':'six-factor composite', 'build':'2026-11-07'})
+            self._json_reply(200, {'version':'4.1', 'trade_analyzer':'six-factor composite', 'build':'2026-11-07'})
+        elif path == '/api/diagnostics':
+            with state_lock:
+                status = load()
+            gw = status.get('gameweek')
+            current_teams = status.get('players', {}).get(str(gw), {})
+            self._json_reply(200, {
+                'version': '4.1', 'gameweek': gw, 'status': status.get('status'),
+                'free_agents_complete': status.get('free_agents', {}).get('complete', False),
+                'free_agents_count': len(status.get('free_agents', {}).get('players', [])),
+                'free_agents_note': status.get('free_agents', {}).get('note'),
+                'tracked_manager_roster_sizes': {
+                    m['name']: len(current_teams.get(m['name'], {}).get('roster', []))
+                    for m in MANAGERS
+                }
+            })
+        elif path == '/api/free-agents':
+            with state_lock:
+                scout = load().get('free_agents', {})
+            self._json_reply(200, scout)
         elif path == '/api/status':
             with state_lock:
                 public = load()

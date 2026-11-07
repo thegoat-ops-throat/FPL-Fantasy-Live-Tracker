@@ -130,14 +130,14 @@
    <div class="fa-field"><label for="fa-sort">Rank by</label><select id="fa-sort"><option value="projected">Next GW projection</option><option value="form">Recent form</option><option value="ppg">Season points / game</option><option value="name">Player name</option></select></div>
    <div class="fa-field"><label for="fa-availability">Availability</label><select id="fa-availability"><option value="all">All statuses</option><option value="healthy">No Draft warning</option><option value="flagged">Flagged / doubtful</option></select></div>
   </div>
-  <p class="fa-summary" id="fa-summary">Waiting for current player pool…</p>
-  <div class="fa-table-wrap"><table class="fa-table"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Club</th><th>Next fixture</th><th>Proj.</th><th>Form</th><th>PPG</th><th>Status</th></tr></thead><tbody id="fa-rows"><tr><td colspan="9">Waiting for Draft data…</td></tr></tbody></table></div>
+  <p class="fa-summary" id="fa-summary">Loading free-agent rankings (v4.1)…</p>
+  <div class="fa-table-wrap"><table class="fa-table"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Club</th><th>Next fixture</th><th>Proj.</th><th>Form</th><th>PPG</th><th>Status</th></tr></thead><tbody id="fa-rows"><tr><td colspan="9">Loading rankings (v4.1)…</td></tr></tbody></table></div>
   <div class="fa-pagination"><span class="tiny" id="fa-page-label"></span><div class="segmented"><button type="button" id="fa-prev">Previous</button><button type="button" id="fa-next">Next</button></div></div>
   <p class="note-inline" id="fa-source">Availability is inferred from the six tracked squads' current Gameweek snapshots, not an official live waiver/free-agent clearance. Verify in the Draft app before making a claim. Projections are estimates and may be missing for players without sufficient data.</p>
  </div>
 </section>
 <section class="view" id="trades">
- <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · TRADE LAB</div><h2>Trade Analyzer <span style="font-size:12px;display:inline-block;vertical-align:middle;letter-spacing:.04em;padding:5px 8px;background:#31536b;border-radius:7px;color:#d6f3a3">v3.9 · MULTI-FACTOR</span></h2><p>Compare trades using a combined player-value rating: form, season performance, playing time, availability, attacking involvement, matchup and projections—not just one Gameweek.</p></div></div>
+ <div class="section-head"><div><div class="eyebrow">TOUCHLINE SCOUT · TRADE LAB</div><h2>Trade Analyzer <span style="font-size:12px;display:inline-block;vertical-align:middle;letter-spacing:.04em;padding:5px 8px;background:#31536b;border-radius:7px;color:#d6f3a3">v4.1 · MULTI-FACTOR · 15 PLAYERS</span></h2><p>Compare trades using a combined player-value rating: form, season performance, playing time, availability, attacking involvement, matchup and projections—not just one Gameweek. Select up to 15 players per side; positions must match.</p></div></div>
  <div class="panel">
   <div class="trade-layout">
    <div class="trade-side"><div class="trade-side-header"><h3>Team A</h3><span id="trade-count-a">0 selected</span></div><label for="trade-manager-a" class="tiny">Manager offering players</label><select id="trade-manager-a" aria-label="First trade manager"></select><div class="trade-roster" id="trade-roster-a"></div></div>
@@ -148,7 +148,7 @@
   <p class="note-inline">The composite rating is a transparent heuristic (0–100), not a prediction of season points. It blends current evidence and includes a small next-matchup component. Player availability is uncertain, and future fixture runs, playing-time changes and trade acceptance cannot be predicted from the available data. No trade is submitted.</p>
  </div>
 </section>
-</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE v3.9 · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
+</main><footer class="foot"><div class="wrap foot-inner"><span>TOUCHLINE v4.1 · Independent fan-made Fantasy Premier League Draft tracker</span><span>Source: Draft API · Totals include only the starting XI, not bench substitutions.</span></div></footer>
 <script>
 'use strict';
 const fallbackManagers=[{name:'Saul',team:'Saulitos',id:393832},{name:'Albert',team:'gospurs',id:365375},{name:'Eddy',team:"It's called soccer",id:372793},{name:'Daviel',team:'LIVERPOOL',id:372999},{name:'Jaden',team:'gooner',id:365166},{name:'Andrew',team:'Bleed Blue',id:372608}];
@@ -161,7 +161,7 @@ let currentView='home',selectedManager='Saul',selectedGW=null,selectedArchive=nu
 const names=()=>data.managers||fallbackManagers;
 const totalOrDash=n=>typeof n==='number'?n.toLocaleString():'—';
 function currentRound(){const gw=Math.max(1,Number(data.gameweek)||8);const first=gw%2===0?gw-1:gw;return data.rounds?.[`GW${first}–GW${first+1}`]||null}
-function tab(view){currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();if(view==='freeagents')renderFreeAgents();window.scrollTo({top:0,behavior:'smooth'})}
+function tab(view){currentView=view;document.querySelectorAll('.navtab').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));document.querySelectorAll('.view').forEach(node=>node.classList.toggle('active',node.id===view));if(view==='lineups')renderLineup();if(view==='archive')renderArchives();if(view==='activity')renderActivity();if(view==='freeagents')loadFreeAgents();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>tab(btn.dataset.view)));
 // Initialize trade selectors on demand, including after live data refreshes.
 document.querySelector('[data-view="trades"]').addEventListener('click',()=>renderTrades());
@@ -389,6 +389,8 @@ function updateStatus(){const synced=Boolean(data.updated_at);const fresh=synced
 // Proposed trade simulator. A balanced scouting index, not a points-only comparison.
 const tradeState={a:null,b:null,selectedA:new Set(),selectedB:new Set(),lastKey:''};
 const tradePos={1:'GK',2:'DEF',3:'MID',4:'FWD'};
+// A Draft squad has 15 players. The position validator still applies to every exchange.
+const TRADE_MAX_PLAYERS = 15;
 const tradeFactors=[
  {key:'projected',label:'Next GW projection',weight:15},
  {key:'recent',label:'Recent form',weight:20},
@@ -476,8 +478,8 @@ function tradeSide(side){
  if(!entry){root.innerHTML='<div class="trade-empty">Waiting for both teams’ squads from the same Gameweek. The analyzer will load when data is available.</div>';return}
  const ctx=tradeContext(common),sorted=[...entry.roster].sort((x,y)=>(x.position_type-y.position_type)||x.name.localeCompare(y.name));
  root.innerHTML=sorted.map(p=>{const proj=tradeProjection(entry,p),rate=tradeRate(p,proj,ctx),checked=selected.has(p.id);
- return `<button type="button" class="trade-player ${checked?'chosen':''}" data-id="${p.id}" aria-pressed="${checked}" ${!checked&&selected.size>=3?'disabled':''}><span class="tp-check">${checked?'✓':''}</span><span class="tp-name"><b>${esc(p.name)}</b><small>${esc(tradePos[p.position_type]||'?')} · ${esc(p.club)} · ${esc(p.opponent||'fixture unavailable')}${p.injury_news?' · ⚕ availability note':''}</small></span><span class="tp-proj">${rate.value===null?'N/A':tradeFmt(rate.value)+'/100'}<small>overall value</small></span></button>`}).join('');
- root.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>{const id=Number(btn.dataset.id);if(selected.has(id))selected.delete(id);else if(selected.size<3)selected.add(id);tradeSide(side);$('trade-output').innerHTML='<div class="trade-empty">Selection updated. Analyze to calculate the new comparison.</div>'}));
+ return `<button type="button" class="trade-player ${checked?'chosen':''}" data-id="${p.id}" aria-pressed="${checked}" ${!checked&&selected.size>=TRADE_MAX_PLAYERS?'disabled':''}><span class="tp-check">${checked?'✓':''}</span><span class="tp-name"><b>${esc(p.name)}</b><small>${esc(tradePos[p.position_type]||'?')} · ${esc(p.club)} · ${esc(p.opponent||'fixture unavailable')}${p.injury_news?' · ⚕ availability note':''}</small></span><span class="tp-proj">${rate.value===null?'N/A':tradeFmt(rate.value)+'/100'}<small>overall value</small></span></button>`}).join('');
+ root.querySelectorAll('[data-id]').forEach(btn=>btn.addEventListener('click',()=>{const id=Number(btn.dataset.id);if(selected.has(id))selected.delete(id);else if(selected.size<TRADE_MAX_PLAYERS)selected.add(id);tradeSide(side);$('trade-output').innerHTML='<div class="trade-empty">Selection updated. Analyze to calculate the new comparison.</div>'}));
 }
 function renderTrades(){
  const mgrs=names();if(mgrs.length<2)return;
@@ -563,7 +565,7 @@ function analyzeTrade(){
  const out=$('trade-output'),common=tradeCommonWeek(tradeState.a,tradeState.b);
  if(!common){out.innerHTML='<div class="trade-empty">Both managers need a full squad from the same Gameweek. Wait for Touchline to sync.</div>';return}
  const a=common.a.roster.filter(p=>tradeState.selectedA.has(p.id)),b=common.b.roster.filter(p=>tradeState.selectedB.has(p.id));
- if(!a.length||a.length!==b.length){out.innerHTML='<div class="trade-empty trade-warning">Select the same number of players on each side (1 to 3).</div>';return}
+ if(!a.length||a.length!==b.length){out.innerHTML='<div class="trade-empty trade-warning">Select the same number of players on each side (1 to 15).</div>';return}
  const counts=players=>[1,2,3,4].map(pos=>players.filter(p=>p.position_type===pos).length);
  if(JSON.stringify(counts(a))!==JSON.stringify(counts(b))){out.innerHTML='<div class="trade-empty trade-warning">Invalid squad balance: each side must exchange the same number of goalkeepers, defenders, midfielders and forwards.</div>';return}
  const value=tradeValuesFor(common),giveA=a.map(value),giveB=b.map(value),all=[...giveA,...giveB];
@@ -585,7 +587,7 @@ function analyzeTrade(){
  const catA=category(giveA),catB=category(giveB);
  const table=cats.map(key=>{const va=catA(key),vb=catB(key);return `<tr><td>${esc(tradeLabels[key])} <small>(${tradeWeights[key]}% base)</small></td><td>${score(va)}</td><td>${score(vb)}</td><td>${va===null||vb===null?'—':signed(vb-va)}</td></tr>`}).join('');
  const warnings=all.filter(x=>x.p.injury_news||!['a','historical'].includes(x.p.injury_status||'a'));
- out.innerHTML=`<div class="eyebrow">TRADE SCOUT · v3.9 · SIX-FACTOR VALUE · GW${common.gw}</div>
+ out.innerHTML=`<div class="eyebrow">TRADE SCOUT · v4.1 · SIX-FACTOR VALUE · GW${common.gw}</div>
  <h3>${esc(verdict)}</h3><p class="tiny"><strong>${esc(tradeState.a)}</strong> sends ${playerNames(a)} and receives ${playerNames(b)}. <strong>${esc(tradeState.b)}</strong> sends ${playerNames(b)} and receives ${playerNames(a)}.</p>
  <div class="trade-score-grid"><div class="trade-score"><strong>${esc(tradeState.a)}</strong><div class="value">${enough?signed(swing):'—'}</div><small>Net composite value gained · 0–100 per player, not GW points</small></div><div class="trade-score"><strong>${esc(tradeState.b)}</strong><div class="value">${enough?signed(-swing):'—'}</div><small>Net composite value gained · 0–100 per player, not GW points</small></div></div>
  <div class="trade-meta"><span>${a.length}-for-${b.length} trade</span><span>Position counts valid</span><span>GW${common.gw} snapshot</span><span>Metric coverage: ${Math.round(avgCoverage*100)}%</span><span>${tradePeerPool(common).length} players in peer pool</span></div>
@@ -624,12 +626,34 @@ function renderFreeAgents(){
  $('fa-prev').disabled=faState.page===0;$('fa-next').disabled=faState.page>=pages-1;
  $('fa-source').textContent=snapshot.note||'Unrostered among tracked squads. Verify official availability before claiming.';
 }
+// Independent data endpoint: the scout must render even if a different page has an exception.
+let scoutLoading=false;
+async function loadFreeAgents(){
+ if(scoutLoading)return;
+ scoutLoading=true;
+ $('fa-summary').textContent='Checking the Draft player pool…';
+ try{
+  const response=await fetch('/api/free-agents',{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const scout=await response.json();
+  if(!scout || !Array.isArray(scout.players))throw new Error('Invalid player-pool response');
+  data.free_agents=scout;
+  renderFreeAgents();
+ }catch(error){
+  $('fa-rows').innerHTML='<tr><td colspan="9">Free-agent data unavailable: '+esc(error.message)+'. Check /api/diagnostics and ensure server.py v4.1 is deployed alongside index.html.</td></tr>';
+  $('fa-summary').textContent='Could not load player pool · Touchline v4.1';
+  $('fa-page-label').textContent='';
+ }finally{scoutLoading=false}
+}
 for(const id of ['fa-search','fa-position','fa-sort','fa-availability'])$(id).addEventListener(id==='fa-search'?'input':'change',()=>{faState.page=0;renderFreeAgents()});
 $('fa-prev').addEventListener('click',()=>{faState.page=Math.max(0,faState.page-1);renderFreeAgents()});
 $('fa-next').addEventListener('click',()=>{faState.page++;renderFreeAgents()});
 
-function renderAll(){renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='trades')renderTrades();if(currentView==='freeagents')renderFreeAgents();}
+function renderAll(){renderHome();renderOverall();renderWaivers();updateStatus();if(currentView==='archive')renderArchives();if(currentView==='lineups')renderLineup();if(currentView==='trades')renderTrades();if(currentView==='freeagents')loadFreeAgents();}
 async function fetchData(){try{const res=await fetch('/api/status',{cache:'no-store'});if(!res.ok)throw Error(`HTTP ${res.status}`);data=await res.json();renderAll()}catch(err){$('small-status').textContent='Server unavailable';$('sync-line').textContent=`Server connection unavailable: ${err.message}. Open this page through python server.py or your Render URL.`;$('sync-line').classList.add('status-error')}}
-renderAll();fetchData();setInterval(fetchData,60*1000);
+try{renderAll()}catch(e){console.error('Touchline initial render:',e)}
+fetchData();setInterval(fetchData,60*1000);
+// Explicit fallback for direct-link navigation / stale page state.
+if(document.querySelector('[data-view="freeagents"].active'))loadFreeAgents();
 </script>
 </body></html>
